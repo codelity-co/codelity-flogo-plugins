@@ -9,7 +9,7 @@ This trigger allows you to listen to messages on NATS.
 
 ### Flogo CLI
 ```bash
-flogo install github.com/project-flogo/edge-contrib/nats/trigger
+flogo install github.com/codelity-co/codelity-flogo-plugins/nats/trigger
 ```
 
 ## Configuration
