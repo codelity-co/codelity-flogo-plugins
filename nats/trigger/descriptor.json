@@ -1,7 +1,7 @@
 {
   "name": "codelity-nats-trigger",
   "type": "flogo:trigger",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "title": "Codelity NATS Trigger",
   "description": "Codelity NATS Trigger",
   "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/tree/master/nats/trigger",
