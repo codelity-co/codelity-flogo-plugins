@@ -82,7 +82,7 @@ The second wildcard is > which will match one or more tokens, and can only appea
 {
   "id": "nats-trigger",
   "name": "NATS Trigger",
-  "ref": "github.com/project-flogo/edge-contrib/nats/trigger",
+  "ref": "github.com/codelity-co/codelity-flogo-plugins/nats/trigger",
   "settings": {
       "clusterUrls" : "nats://localhost:4222",
      	"connName":"NATS connection"
