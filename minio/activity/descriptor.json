@@ -1,7 +1,7 @@
 {
   "name": "sample-activity",
   "type": "flogo:activity",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "title": "Sample Activity",
   "description": "Sample Activity",
   "homepage": "https://github.com/project-flogo/tree/master/examples/activity",
