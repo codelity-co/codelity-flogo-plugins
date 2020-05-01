@@ -3,6 +3,9 @@ title: MinIO
 weight: 4705
 -->
 # MinIO
+
+**This plugin is stll IN PROGRESS**
+
 This activity allows you to manage MinIO object.
 
 ## Installation
