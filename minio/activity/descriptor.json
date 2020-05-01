@@ -1,10 +1,10 @@
 {
-  "name": "sample-activity",
+  "name": "minio-activity",
   "type": "flogo:activity",
   "version": "0.1.0",
-  "title": "Sample Activity",
-  "description": "Sample Activity",
-  "homepage": "https://github.com/project-flogo/tree/master/examples/activity",
+  "title": "Codelity MinIO Activity",
+  "description": "Codelity MinIO Activity",
+  "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/minio/activity",
   "settings": [
     {
       "name": "aSetting",
