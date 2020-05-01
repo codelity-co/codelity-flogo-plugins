@@ -3,6 +3,7 @@ package sample
 import (
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
+	"github.com/minio/minio-go/v6"
 )
 
 func init() {
@@ -22,13 +23,21 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	ctx.Logger().Debugf("Setting: %v", s)
 
-	act := &Activity{} //add aSetting to instance
+	minioClient, err = minio.New(minioEndpoint, minioAccessKey, minioSecretKey, minioUseSsl)
+	if err != nil {
+		return nil, err
+	}
+	
+	act := &Activity{
+		minioClient: minioClient,
+	} 
 
 	return act, nil
 }
 
 // Activity is an sample Activity that can be used as a base to create a custom activity
 type Activity struct {
+	minioClient *minio.Client
 }
 
 // Metadata returns the activity's metadata

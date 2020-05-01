@@ -44,14 +44,36 @@ func (suite *MinioActivityTestSuite) TestMinioActivity_Settings() {
 	t := suite.T()
 
 	settings := &Settings{
+		Endpoint: "miio:9000",
+		AccessKey: "minio",
+		SecretKey: "minio123", 
+		EnableSsl: false,
+	}
+	
+	iCtx := test.NewActivityInitContext(settings, nil)
+	_, err := New(iCtx)
+	assert.NotNil(t, err)
+
+	settings = &Settings{
+		Endpoint: "minio:9000",
+		AccessKey: "minio123",
+		SecretKey: "minio123", 
+		EnableSsl: false,
+	}
+
+	iCtx = test.NewActivityInitContext(settings, nil)
+	_, err = New(iCtx)
+	assert.NotNil(t, err)
+
+	settings = &Settings{
 		Endpoint: "localhost:9000",
 		AccessKey: "minioadmin",
 		SecretKey: "minioadmin", 
 		EnableSsl: false,
 	}
 
-	iCtx := test.NewActivityInitContext(settings, nil)
-	_, err := New(iCtx)
+	iCtx = test.NewActivityInitContext(settings, nil)
+	_, err = New(iCtx)
 	assert.Nil(t, err)
 }
 
