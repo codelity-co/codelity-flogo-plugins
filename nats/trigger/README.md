@@ -3,6 +3,9 @@ title: NATS
 weight: 4705
 -->
 # NATS
+
+**This plugin is in ALPHA stage**
+
 This trigger allows you to listen to messages on NATS.
 
 ## Installation
