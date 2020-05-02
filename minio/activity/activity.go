@@ -3,10 +3,11 @@ package sample
 import (
 	"bytes"
 
-	"github.com/minio/minio-go/v6"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/log"
+
+	"github.com/minio/minio-go/v6"
 )
 
 func init() {
