@@ -48,6 +48,8 @@ func (suite *MinioActivityTestSuite) TestMinioActivity_Settings() {
 		AccessKey: "minio",
 		SecretKey: "minio123", 
 		EnableSsl: false,
+		MethodName: "PutObject",
+		DataType: "string",
 	}
 	
 	iCtx := test.NewActivityInitContext(settings, nil)
@@ -59,6 +61,8 @@ func (suite *MinioActivityTestSuite) TestMinioActivity_Settings() {
 		AccessKey: "minio123",
 		SecretKey: "minio123", 
 		EnableSsl: false,
+		MethodName: "PutObject",
+		DataType: "string",
 	}
 
 	iCtx = test.NewActivityInitContext(settings, nil)
@@ -70,6 +74,9 @@ func (suite *MinioActivityTestSuite) TestMinioActivity_Settings() {
 		AccessKey: "minioadmin",
 		SecretKey: "minioadmin", 
 		EnableSsl: false,
+		BucketName: "flogo",
+		MethodName: "PutObject",
+		DataType: "string",
 	}
 
 	iCtx = test.NewActivityInitContext(settings, nil)
@@ -85,17 +92,17 @@ func (suite *MinioActivityTestSuite) TestMinioActivity_PutObject() {
 		AccessKey: "minioadmin",
 		SecretKey: "minioadmin", 
 		EnableSsl: false,
+		BucketName: "flogo",
+		MethodName: "PutObject",
+		DataType: "string",
 	}
 	iCtx := test.NewActivityInitContext(settings, nil)
 	act, err := New(iCtx)
 	assert.Nil(t, err)
 
 	tc := test.NewActivityContext(act.Metadata())
-	tc.SetInput("method", "PutObject")
-	params := make(map[string]interface{})
-	params["bucketName"] = "flogo"
-	params["objectName"] = "inbox/testing.json"
-	params["stringData"] = "{\"abc\": \"123\"}"
-	tc.SetInput("params", params)
-	act.Eval(tc)
+	tc.SetInput("objectName", "inbox/testing.json")
+	tc.SetInput("data", "{\"abc\": \"123\"}")
+	_, err = act.Eval(tc) 
+	assert.Nil(t, err)
 }
