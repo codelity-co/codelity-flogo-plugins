@@ -15,7 +15,6 @@ type Settings struct {
 }
 
 type HandlerSettings struct {
-	AsyncFlag bool `md:"async"`
 	Subject string `md:"subject,required"`
 	Queue string `md:"queue"`
 	ChannelId string `md:"channelId"`

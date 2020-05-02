@@ -1,7 +1,6 @@
-package nats
+package sample
 
 import (
-	"context"
 	"crypto/tls"
 	"fmt"
 	"os"
@@ -9,236 +8,111 @@ import (
 	"strings"
 	"time"
 
-	"github.com/project-flogo/core/data/coerce"
+	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/log"
-	"github.com/project-flogo/core/trigger"
 
 	nats "github.com/nats-io/nats.go"
 	stan "github.com/nats-io/stan.go"
 )
 
-var triggerMd = trigger.NewMetadata(&Settings{}, &HandlerSettings{}, &Output{})
-
 func init() {
-	_ = trigger.Register(&Trigger{}, &Factory{})
+	_ = activity.Register(&Activity{}) //activity.Register(&Activity{}, New) to create instances using factory method 'New'
 }
 
-// Factory struct
-type Factory struct {
-}
+var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})
 
-// New trigger method of Factory
-func (*Factory) New(config *trigger.Config) (trigger.Trigger, error) {
-	s := &Settings{}
-	err := metadata.MapToStruct(config.Settings, s, true)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Trigger{id: config.Id, triggerSettings: s}, nil
-
-}
-
-// Metadata method of Factory
-func (f *Factory) Metadata() *trigger.Metadata {
-	return triggerMd
-}
-
-// Trigger struct
-type Trigger struct {
-	id       string
-	triggerSettings *Settings
-	natsHandlers []*Handler
-}
-
-// Metadata implements trigger.Trigger.Metadata
-func (t *Trigger) Metadata() *trigger.Metadata {
-	return triggerMd
-}
-
-// Initialize method of trigger
-func (t *Trigger) Initialize(ctx trigger.InitContext) error {
+//New optional factory method, should be used if one activity instance per configuration is desired
+func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	logger := ctx.Logger()
 
-	for _, handler := range ctx.GetHandlers() {
-
-		logger.Debugf("Mapping handler settings...")
-		handlerSettings := &HandlerSettings{}
-		if err := metadata.MapToStruct(handler.Settings(), handlerSettings, true); err != nil {
-			return err
-		}
-		logger.Debugf("Mapped handler settings successfully")
-
-		logger.Debugf("Getting NATS connection...")
-		nc, err := getNatsConnection(logger, t.triggerSettings)
-		if err != nil {
-			return err
-		}
-		logger.Debugf("Got NATS connection")
-
-		logger.Debugf("Registering trigger handler...")
-		stopChannel := make(chan bool)
-
-		natsHandler := &Handler{
-			handlerSettings: handlerSettings,
-			logger: logger,
-			natsConn: nc,
-			stopChannel: stopChannel,
-			triggerHandler: handler,
-		}
-
-		if enableStreaming, ok := t.triggerSettings.Streaming["enableStreaming"]; ok {
-			natsHandler.natsStreaming = enableStreaming.(bool)
-			if natsHandler.natsStreaming {
-				natsHandler.stanConn, err = getStanConnection(t.triggerSettings, nc)
-				if err != nil {
-					return err
-				}
-				natsHandler.stanMsgChannel = make(chan *stan.Msg)
-			}
-		} else {
-			natsHandler.natsMsgChannel = make(chan *nats.Msg)
-		}
-
-		t.natsHandlers = append(t.natsHandlers, natsHandler)
-		logger.Debugf("Registered trigger handler successfully")
-
+	s := &Settings{}
+	err := metadata.MapToStruct(ctx.Settings(), s, true)
+	if err != nil {
+		logger.Errorf("Map settings error: %v", err)
+		return nil, err
 	}
 
-	return nil
-}
+	logger.Debugf("Setting: %v", s)
 
-// Start implements util.Managed.Start
-func (t *Trigger) Start() error {
-	for _, handler := range t.natsHandlers {
-		_ = handler.Start()
+	nc, err := getNatsConnection(logger, s)
+	if err != nil {
+		logger.Errorf("NATS connection error: %v", err)
+		return nil, err
 	}
-	return nil
-}
 
-// Stop implements util.Managed.Stop
-func (t *Trigger) Stop() error {
-	for _, handler := range t.natsHandlers {
-		_ = handler.Stop()
-	}
-	return nil
-}
+	act := &Activity{
+		activitySettings: s,
+		logger: logger,
+		natsConn: nc,
+		natsStreaming: false,
+	} 
 
-// Handler is a NATS subject handler
-type Handler struct {
-	handlerSettings	*HandlerSettings
-	logger         log.Logger
-	natsConn       *nats.Conn
-	natsMsgChannel chan *nats.Msg
-	natsStreaming  bool
-	natsSubscription *nats.Subscription
-	stanConn       stan.Conn
-	stanMsgChannel chan *stan.Msg
-	stanSubscription stan.Subscription
-	stopChannel    chan bool
-	triggerHandler trigger.Handler
-}
-
-func (h *Handler) handleMessage() {
-	for {
-		select {
-		case done := <-h.stopChannel:
-			if done {
-				return
-			}
-		case msg := <-h.natsMsgChannel:
-			var (
-				err error
-				// results map[string]interface{}
-			)
-			out := &Output{}
-			out.Message, err = coerce.ToString(msg.Data)
+	if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
+		act.natsStreaming = enableStreaming.(bool)
+		if act.natsStreaming {
+			act.stanConn, err = getStanConnection(s, nc)
 			if err != nil {
-				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
-			}
-			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap)
-			if err != nil {
-				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
-			}
-		case msg := <-h.stanMsgChannel:
-			var (
-				err error
-				// results map[string]interface{}
-			)
-			out := &Output{}
-			out.Message, err = coerce.ToString(msg.Data)
-			if err != nil {
-				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
-			}
-			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap)
-			if err != nil {
-				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
+				logger.Errorf("STAN connection error: %v", err)
+				return nil, err
 			}
 		}
-	}
+	} 
+
+	return act, nil
 }
 
-// Start starts the handler
-func (h *Handler) Start() error {
-	var err error
-	go h.handleMessage()
-	if len(h.handlerSettings.Queue) > 0 {
-		if !h.natsStreaming {
-			h.natsSubscription, err =  h.natsConn.QueueSubscribe(h.handlerSettings.Subject, h.handlerSettings.Queue, func(m *nats.Msg) {
-				h.natsMsgChannel <- m
-			})
-			if err != nil {
-				return err
-			}
-		} else {
-			h.stanSubscription, err = h.stanConn.QueueSubscribe(h.handlerSettings.ChannelId, h.handlerSettings.Queue, func(m *stan.Msg){
-				h.stanMsgChannel <- m
-			})
-			if err != nil {
-				return err
-			}
+// Activity is an sample Activity that can be used as a base to create a custom activity
+type Activity struct {
+	activitySettings *Settings
+	logger log.Logger
+	natsConn *nats.Conn
+	natsStreaming bool
+	stanConn stan.Conn
+}
+
+// Metadata returns the activity's metadata
+func (a *Activity) Metadata() *activity.Metadata {
+	return activityMd
+}
+
+// Eval implements api.Activity.Eval - Logs the Message
+func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
+
+	input := &Input{}
+	err = ctx.GetInputObject(input)
+	if err != nil {
+		return true, err
+	}
+
+	a.logger.Debugf("Input: %v", input)
+
+	var dataBytes []uint8
+	switch a.activitySettings.DataType {
+	case "string":
+		dataBytes = []uint8(input.Data.(string))
+	case "binary":
+		dataBytes = input.Data.([]uint8)
+	}
+
+	if !a.natsStreaming {
+		if err := a.natsConn.Publish(input.Subject, dataBytes); err != nil {
+			return true, err
 		}
 	} else {
-		if !h.natsStreaming {
-			h.natsSubscription, err = h.natsConn.Subscribe(h.handlerSettings.Subject, func(m *nats.Msg) {
-				h.natsMsgChannel <- m
-			})
-			if err != nil {
-				return err
-			}
-		} else {
-			h.stanSubscription, err = h.stanConn.Subscribe(h.handlerSettings.ChannelId, func(m *stan.Msg){
-				h.stanMsgChannel <- m
-			})
-			if err != nil {
-				return err
-			}
+		if err := a.stanConn.Publish(input.ChannelId, dataBytes); err != nil {
+			return true, err
 		}
-		
-	}
-	return nil
-}
-
-// Stop stops the handler
-func (h *Handler) Stop() error {
-
-	h.stopChannel <- true
-
-	if !h.natsStreaming {
-		close(h.natsMsgChannel)
-	} else {
-		close(h.stanMsgChannel)
-		h.stanConn.Close()
 	}
 
-	close(h.stopChannel)
+	output := &Output{Status: "SUCCESS"}
+	err = ctx.SetOutputObject(output)
+	if err != nil {
+		return true, err
+	}
 
-	_ = h.natsConn.Drain()
-	h.natsConn.Close()
-
-	return nil
+	return true, nil
 }
 
 func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error) {
