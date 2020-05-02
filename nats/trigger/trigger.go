@@ -78,7 +78,6 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 		}
 		logger.Debugf("Got NATS connection")
 
-
 		logger.Debugf("Registering trigger handler...")
 		stopChannel := make(chan bool)
 
@@ -89,7 +88,6 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 			stopChannel: stopChannel,
 			triggerHandler: handler,
 		}
-
 
 		if enableStreaming, ok := t.triggerSettings.Streaming["enableStreaming"]; ok {
 			natsHandler.natsStreaming = enableStreaming.(bool)
@@ -138,7 +136,7 @@ type Handler struct {
 	natsSubscription *nats.Subscription
 	stanConn       stan.Conn
 	stanMsgChannel chan *stan.Msg
-	stanSubscription *stan.Subscription
+	stanSubscription stan.Subscription
 	stopChannel    chan bool
 	triggerHandler trigger.Handler
 }
@@ -195,9 +193,12 @@ func (h *Handler) Start() error {
 				return err
 			}
 		} else {
-			h.stanConn.QueueSubscribe(h.handlerSettings.ChannelId, h.handlerSettings.Queue, func(m *stan.Msg){
+			h.stanSubscription, err = h.stanConn.QueueSubscribe(h.handlerSettings.ChannelId, h.handlerSettings.Queue, func(m *stan.Msg){
 				h.stanMsgChannel <- m
 			})
+			if err != nil {
+				return err
+			}
 		}
 	} else {
 		if !h.natsStreaming {
@@ -208,9 +209,12 @@ func (h *Handler) Start() error {
 				return err
 			}
 		} else {
-			h.stanConn.Subscribe(h.handlerSettings.ChannelId, func(m *stan.Msg){
+			h.stanSubscription, err = h.stanConn.Subscribe(h.handlerSettings.ChannelId, func(m *stan.Msg){
 				h.stanMsgChannel <- m
 			})
+			if err != nil {
+				return err
+			}
 		}
 		
 	}

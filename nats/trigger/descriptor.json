@@ -137,12 +137,6 @@
   "handler": {
     "settings": [
       {
-        "name": "async",
-        "type": "boolean",
-        "description": "Enable async subscription",
-        "default": true
-      }, 
-      {
         "name": "subject",
         "type": "string",
         "description": "NATS subject",
