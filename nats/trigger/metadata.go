@@ -11,12 +11,16 @@ type Settings struct {
 	Auth       	map[string]interface{} `md:"auth"` 			// Auth setting
 	Reconnect 	map[string]interface{} `md:"reconnect"` // Reconnect setting
 	SslConfig 	map[string]interface{} `md:"sslConfig"` // SSL config setting
+	Streaming   map[string]interface{} `md:"streaming"` // NATS streaming config
 }
 
 type HandlerSettings struct {
 	AsyncFlag bool `md:"async"`
 	Subject string `md:"subject,required"`
 	Queue string `md:"queue"`
+	ChannelId string `md:"channelId"`
+	DurableName string `md:"durableName"`
+	MaxInFlight int `md:"maxInFlight"`
 }
 
 type Output struct {
