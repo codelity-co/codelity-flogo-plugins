@@ -1,10 +1,10 @@
 {
-  "name": "codelity-nats-trigger",
-  "type": "flogo:trigger",
-  "version": "0.2.0",
-  "title": "Codelity NATS Trigger",
-  "description": "Codelity NATS Trigger",
-  "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/tree/master/nats/trigger",
+  "name": "sample-activity",
+  "type": "flogo:activity",
+  "version": "0.1.0",
+  "title": "Sample Activity",
+  "description": "Sample Activity",
+  "homepage": "https://github.com/project-flogo/tree/master/examples/activity",
   "settings": [
     {
       "name": "clusterUrls",
@@ -128,41 +128,32 @@
       ]
     }
   ],
-  "output": [
+  "input": [
     {
-      "name": "message",
-      "type": "string"
+      "name": "subject",
+      "type": "string",
+      "description": "NATS subject",
+      "required": true
+    },
+    {
+      "name": "channelId",
+      "type": "string",
+      "description": "NATS streaming channel id"
+    }, 
+    {
+      "name": "data",
+      "type": "any"
     }
   ],
-  "handler": {
-    "settings": [
-      {
-        "name": "subject",
-        "type": "string",
-        "description": "NATS subject",
-        "required": true
-      },
-      {
-        "name": "queue",
-        "type": "string",
-        "descriptoin": "NATS queue"
-      },
-      {
-        "name": "channelId",
-        "type": "string",
-        "description": "NATS streaming channel id"
-      },
-      {
-        "name": "durableName",
-        "type": "string",
-        "description": "NATS streaming durable name"
-      },
-      {
-        "name": "maxInFlight",
-        "type": "integer",
-        "description": "NATS streaming max subscriber in-flight messages",
-        "default": 0
-      },
-    ]
-  }
+  "output": [
+    {
+      "name": "status",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "result",
+      "type": "object"
+    }
+  ]
 }

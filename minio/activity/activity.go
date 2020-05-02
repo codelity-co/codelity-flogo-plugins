@@ -3,9 +3,11 @@ package sample
 import (
 	"bytes"
 
-	"github.com/minio/minio-go/v6"
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
+	"github.com/project-flogo/core/support/log"
+
+	"github.com/minio/minio-go/v6"
 )
 
 func init() {
@@ -17,6 +19,8 @@ var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})
 //New optional factory method, should be used if one activity instance per configuration is desired
 func New(ctx activity.InitContext) (activity.Activity, error) {
 
+	logger := ctx.Logger()
+
 	var (
 		minioClient *minio.Client
 	)
@@ -27,7 +31,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 		return nil, err
 	}
 
-	ctx.Logger().Debugf("Setting: %v", s)
+	logger.Debugf("Setting: %v", s)
 
 	minioClient, err = minio.New(s.Endpoint, s.AccessKey, s.SecretKey, s.EnableSsl)
 	if err != nil {
@@ -36,6 +40,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	
 	act := &Activity{
 		activitySettings: s,
+		loggger: logger,
 		minioClient: minioClient,
 	} 
 
@@ -45,6 +50,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 // Activity is an sample Activity that can be used as a base to create a custom activity
 type Activity struct {
 	activitySettings *Settings
+	logger log.Logger
 	minioClient *minio.Client
 }
 
@@ -62,8 +68,8 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		return true, err
 	}
 
-	ctx.Logger().Debugf("ObjectName: %v", input.ObjectName)
-	ctx.Logger().Debugf("Data: %v", input.Data)
+	a.logger.Debugf("ObjectName: %v", input.ObjectName)
+	a.logger.Debugf("Data: %v", input.Data)
 
 	result := make(map[string]interface{})
 	output := &Output{}
