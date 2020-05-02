@@ -1,5 +1,5 @@
 {
-  "name": "minio-activity",
+  "name": "codelity-minio-activity",
   "type": "flogo:activity",
   "version": "0.2.0",
   "title": "Codelity MinIO Activity",
