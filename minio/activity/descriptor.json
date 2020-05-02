@@ -7,22 +7,67 @@
   "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/minio/activity",
   "settings": [
     {
-      "name": "aSetting",
+      "name": "endpoint",
       "type": "string",
       "required": true
+    },
+    {
+      "name": "accessKey",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "secretKey", 
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "enableSsl",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "bucketName",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "region",
+      "type": "string"
+    },
+    {
+      "name": "method",
+      "type": "string",
+      "enum": [
+        "PutObject"
+      ]
+    },
+    {
+      "name": "dataType",
+      "type": "string",
+      "enum": ["string", "binary"]
     }
   ],
   "input": [
     {
-      "name": "anInput",
+      "name": "objectName",
       "type": "string",
       "required": true
+    },
+    {
+      "name": "data",
+      "type": "any"
     }
   ],
   "output": [
     {
-      "name": "anOutput",
-      "type": "string"
+      "name": "status",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "result",
+      "type": "object"
     }
   ]
 }
