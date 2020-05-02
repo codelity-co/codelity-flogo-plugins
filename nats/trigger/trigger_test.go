@@ -16,15 +16,29 @@ import (
 
 type NatsTriggerTestSuite struct {
 	suite.Suite
-	testConfig string
+	natsTestConfig string
+	stanTestConfig string
 }
 
 func TestNatsTriggerTestSuite(t *testing.T) {
-	command := exec.Command("docker", "start", "mqtt")
+	command := exec.Command("docker", "start", "nats-streaming")
 	err := command.Run()
 	if err != nil {
 		fmt.Println(err.Error())
-		command := exec.Command("docker", "run", "-p", "1883:1883", "-p", "9001:9001", "--name", "mqtt", "-d", "eclipse-mosquitto")
+		command := exec.Command(
+			"docker", "run", 
+			"-p", "4222:4222", 
+			"-p", "6222:6222", 
+			"-p", "8222:8222", 
+			"--name", "nats-streaming", 
+			"-d", 
+			"nats-streaming",
+      "--addr=0.0.0.0",
+      "--port=4222",
+      "--http_port=8222",
+      "--cluster_id=flogo",
+			"--store=MEMORY",
+		)
 		err := command.Run()
 		if err != nil {
 			fmt.Println(err.Error())
@@ -35,7 +49,7 @@ func TestNatsTriggerTestSuite(t *testing.T) {
 }
 
 func (suite *NatsTriggerTestSuite) SetupTest() {
-	suite.testConfig = `{
+	suite.natsTestConfig = `{
 		"id": "nats-trigger",
 		"ref": "github.com/codelity-co/codelity-flogo-plugins/nats/trigger",
 		"settings": {
@@ -53,6 +67,33 @@ func (suite *NatsTriggerTestSuite) SetupTest() {
 			}
 		]
 	}`
+
+	suite.stanTestConfig = `{
+		"id": "nats-trigger",
+		"ref": "github.com/codelity-co/codelity-flogo-plugins/nats/trigger",
+		"settings": {
+			"clusterUrls": "nats://localhost:4222",
+			"streaming": {
+				"enableStreaming": true,
+				"clusterId": "flogo"
+			}
+		},
+		"handlers": [
+			{
+				"settings": {
+					"async": true,
+					"subject": "flogo",
+					"queue": "flogo",
+					"channelId": "flogo",
+					"durableName": "flogo",
+					"maxInFlight": 25
+				},
+				"action": {
+					"id": "dummy"
+				}
+			}
+		]
+	}`
 }
 
 func (suite *NatsTriggerTestSuite) TestNatsTrigger_Register() {
@@ -61,23 +102,44 @@ func (suite *NatsTriggerTestSuite) TestNatsTrigger_Register() {
 	assert.NotNil(suite.T(), f)
 }
 
-func (suite *NatsTriggerTestSuite) TestNatsTrigger_Initialize() {
+func (suite *NatsTriggerTestSuite) TestNatsTrigger_NATSInitialize() {
 	t := suite.T()
-	f := &Factory{}
+
+	factory := &Factory{}
 	config := &trigger.Config{}
-
-	err := json.Unmarshal([]byte(suite.testConfig), config)
+	err := json.Unmarshal([]byte(suite.natsTestConfig), config)
 	assert.Nil(t, err)
-
 	actions := map[string]action.Action{"dummy": test.NewDummyAction(func() {
 	})}
 
-	trg, err := test.InitTrigger(f, config, actions)
-
+	trg, err := test.InitTrigger(factory, config, actions)
 	assert.Nil(t, err)
 	assert.NotNil(t, trg)
+
 	err = trg.Start()
 	assert.Nil(t, err)
+
+	err = trg.Stop()
+	assert.Nil(t, err)
+}
+
+func (suite *NatsTriggerTestSuite) TestNatsTrigger_STANInitialize() {
+	t := suite.T()
+
+	factory := &Factory{}
+	config := &trigger.Config{}
+	err := json.Unmarshal([]byte(suite.stanTestConfig), config)
+	assert.Nil(t, err)
+	actions := map[string]action.Action{"dummy": test.NewDummyAction(func() {
+	})}
+
+	trg, err := test.InitTrigger(factory, config, actions)
+	assert.Nil(t, err)
+	assert.NotNil(t, trg)
+
+	err = trg.Start()
+	assert.Nil(t, err)
+
 	err = trg.Stop()
 	assert.Nil(t, err)
 }
