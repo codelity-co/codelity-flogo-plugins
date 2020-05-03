@@ -88,20 +88,13 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
 	a.logger.Debugf("Input: %v", input)
 
-	var dataBytes []uint8
-	switch a.activitySettings.DataType {
-	case "string":
-		dataBytes = []uint8(input.Data.(string))
-	case "binary":
-		dataBytes = input.Data.([]uint8)
-	}
 
 	if !a.natsStreaming {
-		if err := a.natsConn.Publish(input.Subject, dataBytes); err != nil {
+		if err := a.natsConn.Publish(input.Subject, input.Data); err != nil {
 			return true, err
 		}
 	} else {
-		if err := a.stanConn.Publish(input.ChannelId, dataBytes); err != nil {
+		if err := a.stanConn.Publish(input.ChannelId, input.Data); err != nil {
 			return true, err
 		}
 	}

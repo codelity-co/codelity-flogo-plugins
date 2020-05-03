@@ -141,8 +141,13 @@
       "description": "NATS streaming channel id"
     }, 
     {
-      "name": "data",
-      "type": "any"
+      "name": "stringData",
+      "type": "string"
+    },
+    {
+      "name": "binaryData",
+      "type": "string",
+      "format": "binary"
     }
   ],
   "output": [
