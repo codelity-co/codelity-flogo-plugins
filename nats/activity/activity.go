@@ -44,10 +44,10 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	act := &Activity{
 		activitySettings: s,
-		logger: logger,
-		natsConn: nc,
-		natsStreaming: false,
-	} 
+		logger:           logger,
+		natsConn:         nc,
+		natsStreaming:    false,
+	}
 
 	if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
 		act.natsStreaming = enableStreaming.(bool)
@@ -58,7 +58,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 				return nil, err
 			}
 		}
-	} 
+	}
 
 	return act, nil
 }
@@ -66,10 +66,10 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 // Activity is an sample Activity that can be used as a base to create a custom activity
 type Activity struct {
 	activitySettings *Settings
-	logger log.Logger
-	natsConn *nats.Conn
-	natsStreaming bool
-	stanConn stan.Conn
+	logger           log.Logger
+	natsConn         *nats.Conn
+	natsStreaming    bool
+	stanConn         stan.Conn
 }
 
 // Metadata returns the activity's metadata
@@ -88,13 +88,20 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
 	a.logger.Debugf("Input: %v", input)
 
+	var dataBytes []uint8
+	switch a.activitySettings.DataType {
+	case "string":
+		dataBytes = []uint8(input.Data.(string))
+	case "binary":
+		dataBytes = input.Data.([]uint8)
+	}
 
 	if !a.natsStreaming {
-		if err := a.natsConn.Publish(input.Subject, input.Data); err != nil {
+		if err := a.natsConn.Publish(input.Subject, dataBytes); err != nil {
 			return true, err
 		}
 	} else {
-		if err := a.stanConn.Publish(input.ChannelId, input.Data); err != nil {
+		if err := a.stanConn.Publish(input.ChannelId, dataBytes); err != nil {
 			return true, err
 		}
 	}
@@ -110,11 +117,11 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
 func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error) {
 	var (
-		err error 
-		authOpts []nats.Option
+		err           error
+		authOpts      []nats.Option
 		reconnectOpts []nats.Option
 		sslConfigOpts []nats.Option
-		urlString string
+		urlString     string
 	)
 
 	// Check ClusterUrls
@@ -138,7 +145,7 @@ func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error
 	if err != nil {
 		return nil, err
 	}
-	
+
 	natsOptions := append(authOpts, reconnectOpts...)
 	natsOptions = append(natsOptions, sslConfigOpts...)
 
@@ -146,7 +153,7 @@ func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error
 	if len(settings.ConnName) > 0 {
 		natsOptions = append(natsOptions, nats.Name(settings.ConnName))
 	}
-	
+
 	return nats.Connect(urlString, natsOptions...)
 
 }
@@ -181,7 +188,7 @@ func validateClusterURL(url string) error {
 	if (hostPort[0] != "nats") && (hostPort[0] != "tls") {
 		return fmt.Errorf("protocol schema [%v] is not nats or tls", hostPort[0])
 	}
-	
+
 	return nil
 }
 
@@ -230,7 +237,7 @@ func getNatsConnReconnectOpts(settings *Settings) ([]nats.Option, error) {
 			opts = append(opts, nats.MaxReconnects(maxReconnects.(int)))
 		}
 
-		// Don't randomize 
+		// Don't randomize
 		if dontRandomize, ok := settings.Reconnect["dontRandomize"]; ok {
 			if dontRandomize.(bool) {
 				opts = append(opts, nats.DontRandomize())
@@ -259,7 +266,7 @@ func getNatsConnSslConfigOpts(settings *Settings) ([]nats.Option, error) {
 
 	// Check sslConfig setting
 	if settings.SslConfig != nil {
-		
+
 		// Skip verify
 		if skipVerify, ok := settings.SslConfig["skipVerify"]; ok {
 			opts = append(opts, nats.Secure(&tls.Config{
@@ -290,14 +297,13 @@ func getNatsConnSslConfigOpts(settings *Settings) ([]nats.Option, error) {
 
 func getStanConnection(ts *Settings, conn *nats.Conn) (stan.Conn, error) {
 
-	var ( 
-		err error 
+	var (
+		err       error
 		clusterId interface{}
-		ok bool
-		hostname string
-		sc stan.Conn
+		ok        bool
+		hostname  string
+		sc        stan.Conn
 	)
-
 
 	clusterId, ok = ts.Streaming["clusterId"]
 	if !ok {

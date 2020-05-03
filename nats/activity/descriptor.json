@@ -126,6 +126,11 @@
           "description": "NATS streaming cluster id"
         }
       ]
+    },
+    {
+      "name": "dataType",
+      "type": "string",
+      "enum": ["string", "binary"]
     }
   ],
   "input": [
@@ -142,7 +147,7 @@
     }, 
     {
       "name": "data",
-      "type": "string"
+      "type": "any"
     }
   ],
   "output": [
