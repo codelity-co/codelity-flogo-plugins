@@ -27,39 +27,52 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	logger := ctx.Logger()
 
+	logger.Debugf("Running New method of activity...")
+
 	s := &Settings{}
+	logger.Debugf("Mapping Settings struct...")
 	err := metadata.MapToStruct(ctx.Settings(), s, true)
 	if err != nil {
 		logger.Errorf("Map settings error: %v", err)
 		return nil, err
 	}
+	logger.Debugf("Mapped Settings struct successfully")
 
 	logger.Debugf("Setting: %v", s)
 
+	logger.Debugf("Getting NATS connection...")
 	nc, err := getNatsConnection(logger, s)
 	if err != nil {
 		logger.Errorf("NATS connection error: %v", err)
 		return nil, err
 	}
+	logger.Debugf("Got NATS connection")
 
+	logger.Debugf("Creating Activity struct...")
 	act := &Activity{
 		activitySettings: s,
 		logger:           logger,
 		natsConn:         nc,
 		natsStreaming:    false,
 	}
+	logger.Debugf("Created Activity struct successfully")
 
 	if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
+		logger.Debugf("Enabling NATS streaming...")
 		act.natsStreaming = enableStreaming.(bool)
 		if act.natsStreaming {
+			logger.Debugf("Getting STAN connection...")
 			act.stanConn, err = getStanConnection(s, nc)
 			if err != nil {
 				logger.Errorf("STAN connection error: %v", err)
 				return nil, err
 			}
+			logger.Debugf("Got STAN connection")
 		}
+		logger.Debugf("Enabled NATS streaming successfully")
 	}
 
+	logger.Debugf("Finished New method of activity")
 	return act, nil
 }
 
@@ -80,31 +93,42 @@ func (a *Activity) Metadata() *activity.Metadata {
 // Eval implements api.Activity.Eval - Logs the Message
 func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
+	a.logger.Debugf("Running Eval method of activity...")
 	input := &Input{}
+	a.logger.Debugf("Getting Input object from context...")
 	err = ctx.GetInputObject(input)
 	if err != nil {
 		return true, err
 	}
-
+	a.logger.Debugf("Got Input object successfully")
 	a.logger.Debugf("Input: %v", input)
 
+	a.logger.Debugf("Converting input.Data to []uint8...")
 	dataBytes := []uint8(input.Data)
+	a.logger.Debugf("Converted input.Data to []uint8")
 
 	if !a.natsStreaming {
+		a.logger.Debugf("Publishing data to NATS subject...")
 		if err := a.natsConn.Publish(input.Subject, dataBytes); err != nil {
 			return true, err
 		}
+		a.logger.Debugf("Published data to NATS subject")
 	} else {
+		a.logger.Debugf("Publishing data to STAN Channel...")
 		if err := a.stanConn.Publish(input.ChannelId, dataBytes); err != nil {
 			return true, err
 		}
+		a.logger.Debugf("Published data to STAN channel")
 	}
 
+	a.logger.Debugf("Createing Ouptut struct...")
 	output := &Output{Status: "SUCCESS"}
+	a.logger.Debugf("Setting output object in context...")
 	err = ctx.SetOutputObject(output)
 	if err != nil {
 		return true, err
 	}
+	a.logger.Debugf("Successfully set output object in context")
 
 	return true, nil
 }
@@ -119,26 +143,34 @@ func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error
 	)
 
 	// Check ClusterUrls
+	logger.Debugf("Checking clusterUrls...")
 	if err := checkClusterUrls(settings); err != nil {
 		return nil, err
 	}
+	logger.Debugf("Checked")
 
 	urlString = settings.ClusterUrls
 
+	logger.Debugf("Getting NATS connection auth settings...")
 	authOpts, err = getNatsConnAuthOpts(settings)
 	if err != nil {
 		return nil, err
 	}
+	logger.Debugf("Got NATS connection auth settings")
 
+	logger.Debugf("Getting NATS connection reconnect settings...")
 	reconnectOpts, err = getNatsConnReconnectOpts(settings)
 	if err != nil {
 		return nil, err
 	}
+	logger.Debugf("Got NATS connection reconnect settings")
 
+	logger.Debugf("Getting NATS connection sslConfig settings...")
 	sslConfigOpts, err = getNatsConnSslConfigOpts(settings)
 	if err != nil {
 		return nil, err
 	}
+	logger.Debugf("Got NATS connection sslConfig settings")
 
 	natsOptions := append(authOpts, reconnectOpts...)
 	natsOptions = append(natsOptions, sslConfigOpts...)
