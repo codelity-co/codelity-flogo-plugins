@@ -13,13 +13,13 @@ type Settings struct {
 type Input struct {
 	Subject string `md:"subject,required"`
 	ChannelId string `md:"channelId"`
-	Data []uint8 `md:"data"`
+	Data interface{} `md:"data"`
 }
 
 func (r *Input) FromMap(values map[string]interface{}) error {
 	r.Subject = values["subject"].(string)
 	r.ChannelId = values["channelId"].(string)
-	r.Data = values["data"].([]uint8)
+	r.Data = values["data"]
 	return nil
 }
 
