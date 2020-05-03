@@ -62,11 +62,16 @@ func  (suite *NatsActivityTestSuite) TestNatsActivity_Publish() {
 
 	iCtx := test.NewActivityInitContext(settings, nil)
 	act, err := New(iCtx)
+	if err != nil {
+		fmt.Println(err)
+	}
 	assert.Nil(t, err)
+
+
 
 	ac := test.NewActivityContext(act.Metadata())
 	ac.SetInput("subject", "flogo")
-	ac.SetInput("data", "ABC")
+	ac.SetInput("data", []uint8("ABC"))
 	
 	_, err = act.Eval(ac)
 	assert.Nil(t, err)
