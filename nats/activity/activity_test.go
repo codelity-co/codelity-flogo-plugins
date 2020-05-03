@@ -59,22 +59,20 @@ func (suite *NatsActivityTestSuite) TestNatsActivity_Register() {
 
 func (suite *NatsActivityTestSuite) TestNatsActivity_Publish() {
 	t := suite.T()
+
 	settings := &Settings{
 		ClusterUrls: "nats://localhost:4222",
 		DataType:    "string",
 	}
-
 	iCtx := test.NewActivityInitContext(settings, nil)
 	act, err := New(iCtx)
 	if err != nil {
 		fmt.Println(err)
 	}
 	assert.Nil(t, err)
-
 	ac := test.NewActivityContext(act.Metadata())
 	ac.SetInput("subject", "flogo")
 	ac.SetInput("data", "ABC")
-
 	_, err = act.Eval(ac)
 	assert.Nil(t, err)
 

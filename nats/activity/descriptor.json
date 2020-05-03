@@ -147,7 +147,7 @@
     }, 
     {
       "name": "data",
-      "type": "any"
+      "type": "string"
     }
   ],
   "output": [
