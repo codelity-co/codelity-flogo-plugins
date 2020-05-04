@@ -1,4 +1,4 @@
-package sample
+package nats
 
 import (
 	"crypto/tls"

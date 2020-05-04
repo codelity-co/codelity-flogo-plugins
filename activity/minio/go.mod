@@ -1,4 +1,4 @@
-module github.com/codelity-co/codelity-flogo-plugins/minio/activity
+module github.com/codelity-co/codelity-flogo-plugins/activity/minio
 
 go 1.13
 

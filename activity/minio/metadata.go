@@ -1,4 +1,4 @@
-package sample
+package minio
 
 type Settings struct {
 	Endpoint string `md:"endpoint,required"`

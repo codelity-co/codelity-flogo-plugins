@@ -4,7 +4,7 @@
   "version": "0.1.2",
   "title": "Codelity NATS Activity",
   "description": "Codelity NATS Activity",
-  "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/nats/activity",
+  "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/activity/nats",
   "settings": [
     {
       "name": "clusterUrls",

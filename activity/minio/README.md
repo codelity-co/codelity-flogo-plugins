@@ -12,7 +12,7 @@ This activity allows you to manage MinIO object.
 
 ### Flogo CLI
 ```bash
-flogo install github.com/codelity-co/codelity-flogo-plugins/minio/activity
+flogo install github.com/codelity-co/codelity-flogo-plugins/activity/minio
 ```
 
 ## Configuration
@@ -47,7 +47,7 @@ Method options are documented in [MinIO Golang SDK](https://docs.min.io/docs/gol
 {
   "id": "nats-trigger",
   "name": "NATS Trigger",
-  "ref": "github.com/codelity-co/codelity-flogo-plugins/minio/activity",
+  "ref": "github.com/codelity-co/codelity-flogo-plugins/activity/minio",
   "settings": {
     "endpoint" : "minio:9000",
     "accessKey": "minio",

@@ -4,7 +4,7 @@
   "version": "0.2.0",
   "title": "Codelity MinIO Activity",
   "description": "Codelity MinIO Activity",
-  "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/minio/activity",
+  "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/activity/minio",
   "settings": [
     {
       "name": "endpoint",
