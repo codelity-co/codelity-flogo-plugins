@@ -99,6 +99,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	err = ctx.GetInputObject(input)
 	if err != nil {
 		a.logger.Errorf("Error getting Input object: %v", err)
+		_ = a.OutputToContext(ctx, nil, err)
 		return true, err
 	}
 	a.logger.Debug("Got Input object successfully")
@@ -112,6 +113,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		a.logger.Debug("Publishing data to NATS subject...")
 		if err := a.natsConn.Publish(input.Subject, dataBytes); err != nil {
 			a.logger.Errorf("Error publishing data to NATS subject: %v", err)
+			_ = a.OutputToContext(ctx, nil, err)
 			return true, err
 		}
 		a.logger.Debug("Published data to NATS subject")
@@ -119,15 +121,13 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		a.logger.Debug("Publishing data to STAN Channel...")
 		if err := a.stanConn.Publish(input.ChannelId, dataBytes); err != nil {
 			a.logger.Errorf("Error publishing data to STAN channel: %v", err)
+			_ = a.OutputToContext(ctx, nil, err)
 			return true, err
 		}
 		a.logger.Debug("Published data to STAN channel")
 	}
 
-	a.logger.Debug("Createing Ouptut struct...")
-	output := &Output{Status: "SUCCESS"}
-	a.logger.Debug("Setting output object in context...")
-	err = ctx.SetOutputObject(output)
+	err = a.OutputToContext(ctx, map[string]interface{}{}, nil)
 	if err != nil {
 		a.logger.Errorf("Error setting output object in context: %v", err)
 		return true, err
@@ -135,6 +135,18 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	a.logger.Debug("Successfully set output object in context")
 
 	return true, nil
+}
+
+func (a *Activity) OutputToContext(ctx activity.Context, result map[string]interface{}, err error) error {
+	a.logger.Debug("Createing Ouptut struct...")
+	var output *Output
+	if err != nil {
+		output = &Output{Status: "ERROR", Result: map[string]interface{}{"errorMessage": fmt.Sprintf("%v", err)}}
+	} else {
+		output = &Output{Status: "SUCCESS", Result: result}
+	}
+	a.logger.Debug("Setting output object in context...")
+	return ctx.SetOutputObject(output)
 }
 
 func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error) {
