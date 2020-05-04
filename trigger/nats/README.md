@@ -12,7 +12,7 @@ This trigger allows you to listen to messages on NATS.
 
 ### Flogo CLI
 ```bash
-flogo install github.com/codelity-co/codelity-flogo-plugins/nats/trigger
+flogo install github.com/codelity-co/codelity-flogo-plugins/trigger/nats
 ```
 
 ## Configuration
@@ -85,7 +85,7 @@ The second wildcard is > which will match one or more tokens, and can only appea
 {
   "id": "nats-trigger",
   "name": "NATS Trigger",
-  "ref": "github.com/codelity-co/codelity-flogo-plugins/nats/trigger",
+  "ref": "github.com/codelity-co/codelity-flogo-plugins/trigger/nats",
   "settings": {
       "clusterUrls" : "nats://localhost:4222",
      	"connName":"NATS connection"

@@ -1,4 +1,4 @@
-module github.com/codelity-co/codelity-flogo-plugins/nats
+module github.com/codelity-co/codelity-flogo-plugins/activity/nats
 
 go 1.13
 

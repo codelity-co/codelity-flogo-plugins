@@ -1,4 +1,4 @@
-package sample
+package nats
 
 type Settings struct {
 	ClusterUrls string `md:"clusterUrls,required"` 			// The NATS cluster to connect to
