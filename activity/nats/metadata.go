@@ -1,5 +1,9 @@
 package nats
 
+import (
+	"github.com/project-flogo/core/data/coerce"
+)
+
 type Settings struct {
 	ClusterUrls string `md:"clusterUrls,required"` 			// The NATS cluster to connect to
 	ConnName    string `md:"connName"`
@@ -18,15 +22,16 @@ type Input struct {
 
 func (r *Input) FromMap(values map[string]interface{}) error {
 	var err error
-	r.Subject, err = corece.ToString(values["subject"])
+	r.Subject, err = coerce.ToString(values["subject"])
 	if err != nil {
 		return err
 	}
-	r.ChannelId, err = corece.ToString(values["channelId"])
+	r.ChannelId, err = coerce.ToString(values["channelId"])
 	if err != nil {
 		return err
 	}
-	r.Data, err = corece.ToString(values["data"])
+
+	r.Data, err = coerce.ToString(values["data"])
 	if err != nil {
 		return err
 	}
