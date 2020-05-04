@@ -137,8 +137,7 @@
     {
       "name": "subject",
       "type": "string",
-      "description": "NATS subject",
-      "required": true
+      "description": "NATS subject"
     },
     {
       "name": "channelId",
