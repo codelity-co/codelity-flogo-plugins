@@ -1,5 +1,9 @@
 package nats
 
+import (
+	"github.com/project-flogo/contrib/function/coerce",
+)
+
 type Settings struct {
 	ClusterUrls string `md:"clusterUrls,required"` 			// The NATS cluster to connect to
 	ConnName    string `md:"connName"`
