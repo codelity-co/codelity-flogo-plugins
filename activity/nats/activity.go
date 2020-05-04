@@ -57,6 +57,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	}
 	logger.Debugf("Created Activity struct successfully")
 
+	logger.Debugf("Streaming: %v", s.Streaming)
 	if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
 		logger.Debugf("Enabling NATS streaming...")
 		act.natsStreaming = enableStreaming.(bool)
