@@ -93,42 +93,46 @@ func (a *Activity) Metadata() *activity.Metadata {
 // Eval implements api.Activity.Eval - Logs the Message
 func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
-	a.logger.Debugf("Running Eval method of activity...")
+	a.logger.Debug("Running Eval method of activity...")
 	input := &Input{}
-	a.logger.Debugf("Getting Input object from context...")
+	a.logger.Debug("Getting Input object from context...")
 	err = ctx.GetInputObject(input)
 	if err != nil {
+		a.logger.Errorf("Error getting Input object: %v", err)
 		return true, err
 	}
-	a.logger.Debugf("Got Input object successfully")
+	a.logger.Debug("Got Input object successfully")
 	a.logger.Debugf("Input: %v", input)
 
-	a.logger.Debugf("Converting input.Data to []uint8...")
+	a.logger.Debug("Converting input.Data to []uint8...")
 	dataBytes := []uint8(input.Data)
-	a.logger.Debugf("Converted input.Data to []uint8")
+	a.logger.Debug("Converted input.Data to []uint8")
 
 	if !a.natsStreaming {
-		a.logger.Debugf("Publishing data to NATS subject...")
+		a.logger.Debug("Publishing data to NATS subject...")
 		if err := a.natsConn.Publish(input.Subject, dataBytes); err != nil {
+			a.logger.Errorf("Error publishing data to NATS subject: %v", err)
 			return true, err
 		}
-		a.logger.Debugf("Published data to NATS subject")
+		a.logger.Debug("Published data to NATS subject")
 	} else {
-		a.logger.Debugf("Publishing data to STAN Channel...")
+		a.logger.Debug("Publishing data to STAN Channel...")
 		if err := a.stanConn.Publish(input.ChannelId, dataBytes); err != nil {
+			a.logger.Errorf("Error publishing data to STAN channel: %v", err)
 			return true, err
 		}
-		a.logger.Debugf("Published data to STAN channel")
+		a.logger.Debug("Published data to STAN channel")
 	}
 
-	a.logger.Debugf("Createing Ouptut struct...")
+	a.logger.Debug("Createing Ouptut struct...")
 	output := &Output{Status: "SUCCESS"}
-	a.logger.Debugf("Setting output object in context...")
+	a.logger.Debug("Setting output object in context...")
 	err = ctx.SetOutputObject(output)
 	if err != nil {
+		a.logger.Errorf("Error setting output object in context: %v", err)
 		return true, err
 	}
-	a.logger.Debugf("Successfully set output object in context")
+	a.logger.Debug("Successfully set output object in context")
 
 	return true, nil
 }
@@ -143,34 +147,38 @@ func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error
 	)
 
 	// Check ClusterUrls
-	logger.Debugf("Checking clusterUrls...")
+	logger.Debug("Checking clusterUrls...")
 	if err := checkClusterUrls(settings); err != nil {
+		logger.Errorf("Error checking clusterUrls: %v", err)
 		return nil, err
 	}
-	logger.Debugf("Checked")
+	logger.Debug("Checked")
 
 	urlString = settings.ClusterUrls
 
-	logger.Debugf("Getting NATS connection auth settings...")
+	logger.Debug("Getting NATS connection auth settings...")
 	authOpts, err = getNatsConnAuthOpts(settings)
 	if err != nil {
+		logger.Errorf("Error getting NATS connection auth settings:: %v", err)
 		return nil, err
 	}
-	logger.Debugf("Got NATS connection auth settings")
+	logger.Debug("Got NATS connection auth settings")
 
-	logger.Debugf("Getting NATS connection reconnect settings...")
+	logger.Debug("Getting NATS connection reconnect settings...")
 	reconnectOpts, err = getNatsConnReconnectOpts(settings)
 	if err != nil {
+		logger.Errorf("Error getting NATS connection reconnect settings:: %v", err)
 		return nil, err
 	}
-	logger.Debugf("Got NATS connection reconnect settings")
+	logger.Debug("Got NATS connection reconnect settings")
 
-	logger.Debugf("Getting NATS connection sslConfig settings...")
+	logger.Debug("Getting NATS connection sslConfig settings...")
 	sslConfigOpts, err = getNatsConnSslConfigOpts(settings)
 	if err != nil {
+		logger.Errorf("Error getting NATS connection sslConfig settings:: %v", err)
 		return nil, err
 	}
-	logger.Debugf("Got NATS connection sslConfig settings")
+	logger.Debug("Got NATS connection sslConfig settings")
 
 	natsOptions := append(authOpts, reconnectOpts...)
 	natsOptions = append(natsOptions, sslConfigOpts...)
