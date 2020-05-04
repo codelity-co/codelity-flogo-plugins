@@ -11,15 +11,25 @@ type Settings struct {
 }
 
 type Input struct {
-	Subject string `md:"subject,required"`
+	Subject string `md:"subject"`
 	ChannelId string `md:"channelId"`
 	Data string `md:"data"`
 }
 
 func (r *Input) FromMap(values map[string]interface{}) error {
-	r.Subject = values["subject"].(string)
-	r.ChannelId = values["channelId"].(string)
-	r.Data = values["data"].(string)
+	var err error
+	r.Subject, err = corece.ToString(values["subject"])
+	if err != nil {
+		return err
+	}
+	r.ChannelId, err = corece.ToString(values["channelId"])
+	if err != nil {
+		return err
+	}
+	r.Data, err = corece.ToString(values["data"])
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
