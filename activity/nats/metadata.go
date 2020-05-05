@@ -14,35 +14,87 @@ type Settings struct {
 	DataType    string                 `md:"dataType"`  // Data type
 }
 
+func (s *Settings) FromMap(values map[string]interface{}) error {
+	var err error
+	s.ClusterUrls, err = coerce.ToString(values["clusterUrls"])
+	if err != nil {
+		return err
+	}
+
+	s.ConnName, err = coerce.ToString(values["connName"])
+	if err != nil {
+		return err
+	}
+
+	s.Auth, err = coerce.ToObject(values["auth"])
+	if err != nil {
+		return err
+	}
+
+	s.Reconnect, err = coerce.ToObject(values["reconnect"])
+	if err != nil {
+		return err
+	}
+
+	s.SslConfig, err = coerce.ToObject(values["sslConfig"])
+	if err != nil {
+		return err
+	}
+
+	s.Streaming, err = coerce.ToObject(values["streaming"])
+	if err != nil {
+		return err
+	}
+
+	s.DataType, err = coerce.ToString(values["dataType"])
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Settings) ToMap() map[string]interface{} {
+	return map[string]interface{}{
+		"clusterUrls": s.ClusterUrls,
+		"connName": s.ConnName,
+		"auth": s.Auth,
+		"reconnect": s.Reconnect,
+		"sslConfig": s.SslConfig,
+		"streaming": s.Streaming,
+		"datatype": s.DataType,
+	}
+}
+
 type Input struct {
 	Subject string `md:"subject"`
 	ChannelId string `md:"channelId"`
 	Data string `md:"data"`
 }
 
-func (r *Input) FromMap(values map[string]interface{}) error {
+func (i *Input) FromMap(values map[string]interface{}) error {
 	var err error
-	r.Subject, err = coerce.ToString(values["subject"])
+	i.Subject, err = coerce.ToString(values["subject"])
 	if err != nil {
 		return err
 	}
-	r.ChannelId, err = coerce.ToString(values["channelId"])
+	i.ChannelId, err = coerce.ToString(values["channelId"])
 	if err != nil {
 		return err
 	}
 
-	r.Data, err = coerce.ToString(values["data"])
+	i.Data, err = coerce.ToString(values["data"])
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *Input) ToMap() map[string]interface{} {
+func (i *Input) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"subject": r.Subject,
-		"channelId": r.ChannelId,
-		"data": r.Data,
+		"subject": i.Subject,
+		"channelId": i.ChannelId,
+		"data": i.Data,
 	}
 }
 
