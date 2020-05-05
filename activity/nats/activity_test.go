@@ -17,10 +17,13 @@ type NatsActivityTestSuite struct {
 }
 
 func TestNatsActivityTestSuite(t *testing.T) {
+	suite.Run(t, new(NatsActivityTestSuite))
+}
+
+func (suite *NatsActivityTestSuite) SetupSuite() {
 	command := exec.Command("docker", "start", "nats-streaming")
 	err := command.Run()
 	if err != nil {
-		fmt.Println(err.Error())
 		command := exec.Command(
 			"docker", "run",
 			"-p", "4222:4222",
@@ -42,11 +45,6 @@ func TestNatsActivityTestSuite(t *testing.T) {
 		}
 		time.Sleep(10 * time.Second)
 	}
-	suite.Run(t, new(NatsActivityTestSuite))
-}
-
-func (suite *NatsActivityTestSuite) SetupTest() {
-
 }
 
 func (suite *NatsActivityTestSuite) TestNatsActivity_Register() {
