@@ -27,53 +27,53 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	logger := ctx.Logger()
 
-	logger.Debugf("Running New method of activity...")
+	logger.Debug("Running New method of activity...")
 
 	s := &Settings{}
-	logger.Debugf("Mapping Settings struct...")
+	logger.Debug("Mapping Settings struct...")
 	err := metadata.MapToStruct(ctx.Settings(), s, true)
 	if err != nil {
 		logger.Errorf("Map settings error: %v", err)
 		return nil, err
 	}
-	logger.Debugf("Mapped Settings struct successfully")
+	logger.Debug("Mapped Settings struct successfully")
 
-	logger.Debugf("Setting: %v", s)
+	logger.Debug("Setting: %v", s)
 
-	logger.Debugf("Getting NATS connection...")
+	logger.Debug("Getting NATS connection...")
 	nc, err := getNatsConnection(logger, s)
 	if err != nil {
 		logger.Errorf("NATS connection error: %v", err)
 		return nil, err
 	}
-	logger.Debugf("Got NATS connection")
+	logger.Debug("Got NATS connection")
 
-	logger.Debugf("Creating Activity struct...")
+	logger.Debug("Creating Activity struct...")
 	act := &Activity{
 		activitySettings: s,
 		logger:           logger,
 		natsConn:         nc,
 		natsStreaming:    false,
 	}
-	logger.Debugf("Created Activity struct successfully")
+	logger.Debug("Created Activity struct successfully")
 
 	logger.Debugf("Streaming: %v", s.Streaming)
 	if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
-		logger.Debugf("Enabling NATS streaming...")
+		logger.Debug("Enabling NATS streaming...")
 		act.natsStreaming = enableStreaming.(bool)
 		if act.natsStreaming {
-			logger.Debugf("Getting STAN connection...")
+			logger.Debug("Getting STAN connection...")
 			act.stanConn, err = getStanConnection(s, nc)
 			if err != nil {
 				logger.Errorf("STAN connection error: %v", err)
 				return nil, err
 			}
-			logger.Debugf("Got STAN connection")
+			logger.Debug("Got STAN connection")
 		}
-		logger.Debugf("Enabled NATS streaming successfully")
+		logger.Debug("Enabled NATS streaming successfully")
 	}
 
-	logger.Debugf("Finished New method of activity")
+	logger.Debug("Finished New method of activity")
 	return act, nil
 }
 
@@ -92,8 +92,16 @@ func (a *Activity) Metadata() *activity.Metadata {
 }
 
 // Eval implements api.Activity.Eval - Logs the Message
-func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
+func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 
+	var (
+		err error
+		result map[string]interface{}
+
+	)
+
+	result = make(map[string]interface{})
+	
 	a.logger.Debug("Running Eval method of activity...")
 	input := &Input{}
 	a.logger.Debug("Getting Input object from context...")
@@ -112,7 +120,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
 	if !a.natsStreaming {
 		a.logger.Debug("Publishing data to NATS subject...")
-		if err := a.natsConn.Publish(input.Subject, dataBytes); err != nil {
+		if err = a.natsConn.Publish(input.Subject, dataBytes); err != nil {
 			a.logger.Errorf("Error publishing data to NATS subject: %v", err)
 			_ = a.OutputToContext(ctx, nil, err)
 			return true, err
@@ -120,7 +128,12 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		a.logger.Debug("Published data to NATS subject")
 	} else {
 		a.logger.Debug("Publishing data to STAN Channel...")
-		if err := a.stanConn.Publish(input.ChannelId, dataBytes); err != nil {
+		result["ackedNuid"], err = a.stanConn.PublishAsync(input.ChannelId, dataBytes,func(ackedNuid string, err error) {
+			if err != nil {
+				a.logger.Errorf("STAN acknowledgement error: %v", err)
+			} 
+		})
+		if err != nil {
 			a.logger.Errorf("Error publishing data to STAN channel: %v", err)
 			_ = a.OutputToContext(ctx, nil, err)
 			return true, err
@@ -128,7 +141,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 		a.logger.Debug("Published data to STAN channel")
 	}
 
-	err = a.OutputToContext(ctx, map[string]interface{}{}, nil)
+	err = a.OutputToContext(ctx, result, nil)
 	if err != nil {
 		a.logger.Errorf("Error setting output object in context: %v", err)
 		return true, err
