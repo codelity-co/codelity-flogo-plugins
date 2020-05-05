@@ -2,6 +2,7 @@ package nats
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -95,13 +96,12 @@ func (a *Activity) Metadata() *activity.Metadata {
 func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 
 	var (
-		err error
+		err    error
 		result map[string]interface{}
-
 	)
 
 	result = make(map[string]interface{})
-	
+
 	a.logger.Debug("Running Eval method of activity...")
 	input := &Input{}
 	a.logger.Debug("Getting Input object from context...")
@@ -127,18 +127,29 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		}
 		a.logger.Debug("Published data to NATS subject")
 	} else {
+		message := map[string]interface{}{
+			"subject": input.Subject,
+			"message": dataBytes,
+		}
+
+		var messageBytes []uint8
+		messageBytes, err = json.Marshal(message)
+		if err != nil {
+			a.logger.Errorf("Marshal error: %v", err)
+			return true, err
+		}
 		a.logger.Debug("Publishing data to STAN Channel...")
-		result["ackedNuid"], err = a.stanConn.PublishAsync(input.ChannelId, dataBytes,func(ackedNuid string, err error) {
+		result["ackedNuid"], err = a.stanConn.PublishAsync(input.ChannelId, messageBytes, func(ackedNuid string, err error) {
 			if err != nil {
 				a.logger.Errorf("STAN acknowledgement error: %v", err)
-			} 
+			}
 		})
 		if err != nil {
 			a.logger.Errorf("Error publishing data to STAN channel: %v", err)
 			_ = a.OutputToContext(ctx, nil, err)
 			return true, err
 		}
-		a.logger.Debug("Published data to STAN channel")
+		a.logger.Debugf("Published data to STAN channel: %v", result)
 	}
 
 	err = a.OutputToContext(ctx, result, nil)
