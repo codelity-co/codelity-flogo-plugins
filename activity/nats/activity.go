@@ -31,7 +31,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	logger.Debug("Running New method of activity...")
 
 	s := &Settings{}
-	
+
 	logger.Debug("Mapping Settings struct...")
 	// err := metadata.MapToStruct(ctx.Settings(), s, true)
 	err := s.FromMap(ctx.Settings())
@@ -41,7 +41,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	}
 	logger.Debug("Mapped Settings struct successfully")
 
-	logger.Debugf("Setting: %v", s)
+	logger.Debugf("From Map Setting: %v", s)
 
 	logger.Debug("Getting NATS connection...")
 	nc, err := getNatsConnection(logger, s)
