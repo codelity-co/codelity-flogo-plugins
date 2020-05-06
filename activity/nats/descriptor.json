@@ -115,21 +115,15 @@
       "type": "object",
       "properties": [
         {
-          "name": "mapping", 
-          "type": "object",
-          "properties": [
-            {
-              "name": "enableStreaming", 
-              "type": "boolean",
-              "description": "Enable NATS Streaming",
-              "default": false
-            },
-            {
-              "name": "clusterId",
-              "type": "string",
-              "description": "NATS streaming cluster id"
-            }
-          ]
+          "name": "enableStreaming", 
+          "type": "boolean",
+          "description": "Enable NATS Streaming",
+          "default": false
+        },
+        {
+          "name": "clusterId",
+          "type": "string",
+          "description": "NATS streaming cluster id"
         }
       ]
     },
