@@ -60,19 +60,21 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	logger.Debug("Created Activity struct successfully")
 
 	logger.Debugf("Streaming: %v", s.Streaming)
-	if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
-		logger.Debug("Enabling NATS streaming...")
-		act.natsStreaming = enableStreaming.(bool)
-		if act.natsStreaming {
-			logger.Debug("Getting STAN connection...")
-			act.stanConn, err = getStanConnection(s, nc)
-			if err != nil {
-				logger.Errorf("STAN connection error: %v", err)
-				return nil, err
+	if mapping, hasMapping := s.Streaming["mapping"]; hasMapping {
+		if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
+			logger.Debug("Enabling NATS streaming...")
+			act.natsStreaming = enableStreaming.(bool)
+			if act.natsStreaming {
+				logger.Debug("Getting STAN connection...")
+				act.stanConn, err = getStanConnection(mapping, nc)
+				if err != nil {
+					logger.Errorf("STAN connection error: %v", err)
+					return nil, err
+				}
+				logger.Debug("Got STAN connection")
 			}
-			logger.Debug("Got STAN connection")
+			logger.Debug("Enabled NATS streaming successfully")
 		}
-		logger.Debug("Enabled NATS streaming successfully")
 	}
 
 	logger.Debug("Finished New method of activity")
@@ -367,17 +369,17 @@ func getNatsConnSslConfigOpts(settings *Settings) ([]nats.Option, error) {
 	return opts, nil
 }
 
-func getStanConnection(ts *Settings, conn *nats.Conn) (stan.Conn, error) {
+func getStanConnection(mapping map[string]interface{}, conn *nats.Conn) (stan.Conn, error) {
 
 	var (
 		err       error
-		clusterId interface{}
+		clusterID interface{}
 		ok        bool
 		hostname  string
 		sc        stan.Conn
 	)
 
-	clusterId, ok = ts.Streaming["clusterId"]
+	clusterID, ok = mapping["clusterId"]
 	if !ok {
 		return nil, fmt.Errorf("clusterId not found")
 	}
@@ -392,7 +394,7 @@ func getStanConnection(ts *Settings, conn *nats.Conn) (stan.Conn, error) {
 		return nil, err
 	}
 
-	sc, err = stan.Connect(clusterId.(string), hostname, stan.NatsConn(conn))
+	sc, err = stan.Connect(clusterID.(string), hostname, stan.NatsConn(conn))
 	if err != nil {
 		return nil, err
 	}
