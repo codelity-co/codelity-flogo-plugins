@@ -25,6 +25,10 @@ var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})
 //New optional factory method, should be used if one activity instance per configuration is desired
 func New(ctx activity.InitContext) (activity.Activity, error) {
 
+	var (
+		err error 
+		nc *nats.Conn
+	)
 	logger := ctx.Logger()
 
 	logger.Debug("Running New method of activity...")
@@ -32,8 +36,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	s := &Settings{}
 
 	logger.Debug("Mapping Settings struct...")
-	// err := metadata.MapToStruct(ctx.Settings(), s, true)
-	err := s.FromMap(ctx.Settings())
+	err = s.FromMap(ctx.Settings())
 	if err != nil {
 		logger.Errorf("Map settings error: %v", err)
 		return nil, err
@@ -43,7 +46,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	logger.Debugf("From Map Setting: %v", s)
 
 	logger.Debug("Getting NATS connection...")
-	nc, err := getNatsConnection(logger, s)
+	nc, err = getNatsConnection(logger, s)
 	if err != nil {
 		logger.Errorf("NATS connection error: %v", err)
 		return nil, err
@@ -63,7 +66,10 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
 		logger.Debug("Enabling NATS streaming...")
-		act.natsStreaming = enableStreaming.(bool)
+		act.natsStreaming, err = strconv.ParseBool(enableStreaming.(string))
+		if err != nil {
+			return nil, err
+		}
 		if act.natsStreaming {
 			logger.Debug("Getting STAN connection...")
 			act.stanConn, err = getStanConnection(s.Streaming, nc)
@@ -188,7 +194,7 @@ func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error
 
 	// Check ClusterUrls
 	logger.Debug("Checking clusterUrls...")
-	if err := checkClusterUrls(settings); err != nil {
+	if err := checkClusterUrls(logger, settings); err != nil {
 		logger.Errorf("Error checking clusterUrls: %v", err)
 		return nil, err
 	}
@@ -197,7 +203,7 @@ func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error
 	urlString = settings.ClusterUrls
 
 	logger.Debug("Getting NATS connection auth settings...")
-	authOpts, err = getNatsConnAuthOpts(settings)
+	authOpts, err = getNatsConnAuthOpts(logger, settings)
 	if err != nil {
 		logger.Errorf("Error getting NATS connection auth settings:: %v", err)
 		return nil, err
@@ -205,7 +211,7 @@ func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error
 	logger.Debug("Got NATS connection auth settings")
 
 	logger.Debug("Getting NATS connection reconnect settings...")
-	reconnectOpts, err = getNatsConnReconnectOpts(settings)
+	reconnectOpts, err = getNatsConnReconnectOpts(logger, settings)
 	if err != nil {
 		logger.Errorf("Error getting NATS connection reconnect settings:: %v", err)
 		return nil, err
@@ -213,7 +219,7 @@ func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error
 	logger.Debug("Got NATS connection reconnect settings")
 
 	logger.Debug("Getting NATS connection sslConfig settings...")
-	sslConfigOpts, err = getNatsConnSslConfigOpts(settings)
+	sslConfigOpts, err = getNatsConnSslConfigOpts(logger, settings)
 	if err != nil {
 		logger.Errorf("Error getting NATS connection sslConfig settings:: %v", err)
 		return nil, err
@@ -233,13 +239,15 @@ func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error
 }
 
 // checkClusterUrls is function to all valid NATS cluster urls
-func checkClusterUrls(settings *Settings) error {
+func checkClusterUrls(logger log.Logger, settings *Settings) error {
 	// Check ClusterUrls
 	clusterUrls := strings.Split(settings.ClusterUrls, ",")
+	logger.Debugf("clusterUrls: %v", clusterUrls)
 	if len(clusterUrls) < 1 {
 		return fmt.Errorf("ClusterUrl [%v] is invalid, require at least one url", settings.ClusterUrls)
 	}
 	for _, v := range clusterUrls {
+		logger.Debugf("v: %v", v)
 		if err := validateClusterURL(v); err != nil {
 			return err
 		}
@@ -267,10 +275,11 @@ func validateClusterURL(url string) error {
 }
 
 // getNatsConnAuthOps return slice of nats.Option specific for NATS authentication
-func getNatsConnAuthOpts(settings *Settings) ([]nats.Option, error) {
+func getNatsConnAuthOpts(logger log.Logger, settings *Settings) ([]nats.Option, error) {
 	opts := make([]nats.Option, 0)
 	// Check auth setting
-	if settings.Auth != nil {
+	logger.Debugf("settings.Auth: %v", settings.Auth)
+	if settings.Auth != nil && len(settings.Auth) > 0 {
 		if username, ok := settings.Auth["username"]; ok { // Check if usename is defined
 			password, ok := settings.Auth["password"] // check if password is defined
 			if !ok {
@@ -294,10 +303,11 @@ func getNatsConnAuthOpts(settings *Settings) ([]nats.Option, error) {
 	return opts, nil
 }
 
-func getNatsConnReconnectOpts(settings *Settings) ([]nats.Option, error) {
+func getNatsConnReconnectOpts(logger log.Logger, settings *Settings) ([]nats.Option, error) {
 	opts := make([]nats.Option, 0)
 	// Check reconnect setting
-	if settings.Reconnect != nil {
+	logger.Debugf("settings.Reconnect: %v", settings.Reconnect)
+	if settings.Reconnect != nil && len(settings.Reconnect) > 0 {
 
 		// Enable autoReconnect
 		if autoReconnect, ok := settings.Reconnect["autoReconnect"]; ok {
@@ -335,11 +345,12 @@ func getNatsConnReconnectOpts(settings *Settings) ([]nats.Option, error) {
 	return opts, nil
 }
 
-func getNatsConnSslConfigOpts(settings *Settings) ([]nats.Option, error) {
+func getNatsConnSslConfigOpts(logger log.Logger, settings *Settings) ([]nats.Option, error) {
 	opts := make([]nats.Option, 0)
 
 	// Check sslConfig setting
-	if settings.SslConfig != nil {
+	logger.Debugf("settings.SslConfig: %v", settings.SslConfig)
+	if settings.SslConfig != nil && len(settings.SslConfig) > 0 {
 
 		// Skip verify
 		if skipVerify, ok := settings.SslConfig["skipVerify"]; ok {

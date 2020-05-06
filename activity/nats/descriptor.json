@@ -116,9 +116,11 @@
       "properties": [
         {
           "name": "enableStreaming", 
-          "type": "boolean",
+          "type": "string",
           "description": "Enable NATS Streaming",
-          "default": false
+          "enum": ["true", "false"],
+          "allowed": ["true", "false"],
+          "default": "false"
         },
         {
           "name": "clusterId",
