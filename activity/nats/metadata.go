@@ -1,6 +1,7 @@
 package nats
 
 import (
+	"reflect"
 	"github.com/project-flogo/core/data/coerce"
 )
 
@@ -26,44 +27,49 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
-	s.Auth, err = coerce.ToObject(values["auth"])
-	if err != nil {
-		return err
-	}
-
-	s.Reconnect, err = coerce.ToObject(values["reconnect"])
-	if err != nil {
-		return err
-	}
-
-	s.SslConfig, err = coerce.ToObject(values["sslConfig"])
-	if err != nil {
-		return err
-	}
-
-	s.Streaming, err = coerce.ToObject(values["streaming"])
-	if err != nil {
-		return err
-	}
-
 	s.DataType, err = coerce.ToString(values["dataType"])
 	if err != nil {
 		return err
 	}
 
-	return nil
+	s.Auth = make(map[string]interface{})
+	for k, v := range coerce.ToObject(values["auth"]) {
+		s.Auth[k.(string)] := s.MapValue(v)
+	}
+
+	s.Reconnect = make(map[string]interface{})
+	for k, v := range coerce.ToObject(values["reconnect"]) {
+		s.Auth[k.(string)] := s.MapValue(v)
+	}
+
+	s.SslConfig = make(map[string]interface{})
+	for k, v := range coerce.ToObject(values["sslConfig"]) {
+		s.Auth[k.(string)] := s.MapValue(v)
+	}
+
+	s.Streaming = make(map[string]interface{})
+	for k, v := range coerce.ToObject(values["streaming"]) {
+		s.Auth[k.(string)] := s.MapValue(v)
+	}
+
 }
 
 func (s *Settings) ToMap() map[string]interface{} {
+
 	return map[string]interface{}{
 		"clusterUrls": s.ClusterUrls,
 		"connName": s.ConnName,
+		"dataType": s.DataType,
 		"auth": s.Auth,
 		"reconnect": s.Reconnect,
 		"sslConfig": s.SslConfig,
 		"streaming": s.Streaming,
-		"datatype": s.DataType,
 	}
+
+}
+
+func (s *Settings) MapValue(value interface{}) interface{} {
+	return coerce.ToAny(value)
 }
 
 type Input struct {
