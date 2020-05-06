@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/project-flogo/core/activity"
-	// "github.com/project-flogo/core/data/metadata"
+	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/log"
 
 	nats "github.com/nats-io/nats.go"
@@ -33,8 +33,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	s := &Settings{}
 
 	logger.Debug("Mapping Settings struct...")
-	// err := metadata.MapToStruct(ctx.Settings(), s, true)
-	err := s.FromMap(ctx.Settings())
+	err := metadata.MapToStruct(ctx.Settings(), s, true)
 	if err != nil {
 		logger.Errorf("Map settings error: %v", err)
 		return nil, err
