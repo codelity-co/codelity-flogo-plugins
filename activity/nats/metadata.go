@@ -2,6 +2,7 @@ package nats
 
 import (
 	"fmt"
+
 	"github.com/project-flogo/core/data/coerce"
 )
 
@@ -36,29 +37,28 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
-
-	if len(values["auth"].(map[string]interface{})) > 0 {
+	if values["auth"] != nil {
 		s.Auth = make(map[string]interface{})
 		for k, v := range values["auth"].(map[string]interface{}) {
 			s.Auth[k] = s.MapValue(v)
 		}
 	}
 
-	if len(values["reconnect"].(map[string]interface{})) > 0 {
+	if values["reconnect"] != nil {
 		s.Reconnect = make(map[string]interface{})
 		for k, v := range values["reconnect"].(map[string]interface{}) {
 			s.Auth[k] = s.MapValue(v)
-		}	
+		}
 	}
 
-	if len(values["sslConfig"].(map[string]interface{})) > 0 {
+	if values["sslConfig"] != nil {
 		s.SslConfig = make(map[string]interface{})
 		for k, v := range values["sslConfig"].(map[string]interface{}) {
 			s.Auth[k] = s.MapValue(v)
 		}
 	}
 
-	if len(values["streaming"].(map[string]interface{})) > 0 {
+	if values["streaming"] != nil {
 		s.Streaming = make(map[string]interface{})
 		for k, v := range values["streaming"].(map[string]interface{}) {
 			s.Auth[k] = s.MapValue(v)
@@ -73,12 +73,12 @@ func (s *Settings) ToMap() map[string]interface{} {
 
 	return map[string]interface{}{
 		"clusterUrls": s.ClusterUrls,
-		"connName": s.ConnName,
-		"dataType": s.DataType,
-		"auth": s.Auth,
-		"reconnect": s.Reconnect,
-		"sslConfig": s.SslConfig,
-		"streaming": s.Streaming,
+		"connName":    s.ConnName,
+		"dataType":    s.DataType,
+		"auth":        s.Auth,
+		"reconnect":   s.Reconnect,
+		"sslConfig":   s.SslConfig,
+		"streaming":   s.Streaming,
 	}
 
 }
