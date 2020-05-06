@@ -47,21 +47,21 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 	if values["reconnect"] != nil {
 		s.Reconnect = make(map[string]interface{})
 		for k, v := range values["reconnect"].(map[string]interface{}) {
-			s.Auth[k] = s.MapValue(v)
+			s.Reconnect[k] = s.MapValue(v)
 		}
 	}
 
 	if values["sslConfig"] != nil {
 		s.SslConfig = make(map[string]interface{})
 		for k, v := range values["sslConfig"].(map[string]interface{}) {
-			s.Auth[k] = s.MapValue(v)
+			s.SslConfig[k] = s.MapValue(v)
 		}
 	}
 
 	if values["streaming"] != nil {
 		s.Streaming = make(map[string]interface{})
 		for k, v := range values["streaming"].(map[string]interface{}) {
-			s.Auth[k] = s.MapValue(v)
+			s.Streaming[k] = s.MapValue(v)
 		}
 	}
 
