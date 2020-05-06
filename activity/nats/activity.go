@@ -12,6 +12,7 @@ import (
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/log"
+	"github.com/project-flogo/core/data/coerce"
 
 	nats "github.com/nats-io/nats.go"
 	stan "github.com/nats-io/stan.go"
@@ -33,7 +34,8 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	s := &Settings{}
 
 	logger.Debug("Mapping Settings struct...")
-	err := metadata.MapToStruct(ctx.Settings(), s, true)
+	// err := metadata.MapToStruct(ctx.Settings(), s, true)
+	err := s.FromMap(ctx.Settings)
 	if err != nil {
 		logger.Errorf("Map settings error: %v", err)
 		return nil, err
@@ -60,22 +62,22 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	logger.Debug("Created Activity struct successfully")
 
 	logger.Debugf("Streaming: %v", s.Streaming)
-	if mapping, hasMapping := s.Streaming["mapping"]; hasMapping {
-		if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
-			logger.Debug("Enabling NATS streaming...")
-			act.natsStreaming = enableStreaming.(bool)
-			if act.natsStreaming {
-				logger.Debug("Getting STAN connection...")
-				act.stanConn, err = getStanConnection(mapping, nc)
-				if err != nil {
-					logger.Errorf("STAN connection error: %v", err)
-					return nil, err
-				}
-				logger.Debug("Got STAN connection")
+
+	if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
+		logger.Debug("Enabling NATS streaming...")
+		act.natsStreaming = coerce.ToBool(enableStreaming)
+		if act.natsStreaming {
+			logger.Debug("Getting STAN connection...")
+			act.stanConn, err = getStanConnection(s.Streaming, nc)
+			if err != nil {
+				logger.Errorf("STAN connection error: %v", err)
+				return nil, err
 			}
-			logger.Debug("Enabled NATS streaming successfully")
+			logger.Debug("Got STAN connection")
 		}
+		logger.Debug("Enabled NATS streaming successfully")
 	}
+
 
 	logger.Debug("Finished New method of activity")
 	return act, nil
@@ -373,16 +375,17 @@ func getStanConnection(mapping map[string]interface{}, conn *nats.Conn) (stan.Co
 
 	var (
 		err       error
-		clusterID interface{}
+		clusterID string
 		ok        bool
 		hostname  string
 		sc        stan.Conn
 	)
 
-	clusterID, ok = mapping["clusterId"]
-	if !ok {
+	if _, ok = mapping["clusterId"]; !ok {
 		return nil, fmt.Errorf("clusterId not found")
 	}
+
+	clusterID = mapping["clusterId"].(string)
 
 	hostname, err = os.Hostname()
 	hostname = strings.Split(hostname, ".")[0]
@@ -394,7 +397,7 @@ func getStanConnection(mapping map[string]interface{}, conn *nats.Conn) (stan.Co
 		return nil, err
 	}
 
-	sc, err = stan.Connect(clusterID.(string), hostname, stan.NatsConn(conn))
+	sc, err = stan.Connect(clusterID, hostname, stan.NatsConn(conn))
 	if err != nil {
 		return nil, err
 	}
