@@ -10,9 +10,7 @@ import (
 	"time"
 
 	"github.com/project-flogo/core/activity"
-	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/log"
-	"github.com/project-flogo/core/data/coerce"
 
 	nats "github.com/nats-io/nats.go"
 	stan "github.com/nats-io/stan.go"
@@ -35,7 +33,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	logger.Debug("Mapping Settings struct...")
 	// err := metadata.MapToStruct(ctx.Settings(), s, true)
-	err := s.FromMap(ctx.Settings)
+	err := s.FromMap(ctx.Settings())
 	if err != nil {
 		logger.Errorf("Map settings error: %v", err)
 		return nil, err
@@ -65,7 +63,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
 		logger.Debug("Enabling NATS streaming...")
-		act.natsStreaming = coerce.ToBool(enableStreaming)
+		act.natsStreaming = enableStreaming.(bool)
 		if act.natsStreaming {
 			logger.Debug("Getting STAN connection...")
 			act.stanConn, err = getStanConnection(s.Streaming, nc)

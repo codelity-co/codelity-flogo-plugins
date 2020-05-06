@@ -1,7 +1,7 @@
 package nats
 
 import (
-	"reflect"
+	"fmt"
 	"github.com/project-flogo/core/data/coerce"
 )
 
@@ -16,7 +16,11 @@ type Settings struct {
 }
 
 func (s *Settings) FromMap(values map[string]interface{}) error {
-	var err error
+	fmt.Println(values)
+
+	var (
+		err error
+	)
 	s.ClusterUrls, err = coerce.ToString(values["clusterUrls"])
 	if err != nil {
 		return err
@@ -32,25 +36,36 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
-	s.Auth = make(map[string]interface{})
-	for k, v := range coerce.ToObject(values["auth"]) {
-		s.Auth[k.(string)] := s.MapValue(v)
+
+	if len(values["auth"].(map[string]interface{})) > 0 {
+		s.Auth = make(map[string]interface{})
+		for k, v := range values["auth"].(map[string]interface{}) {
+			s.Auth[k] = s.MapValue(v)
+		}
 	}
 
-	s.Reconnect = make(map[string]interface{})
-	for k, v := range coerce.ToObject(values["reconnect"]) {
-		s.Auth[k.(string)] := s.MapValue(v)
+	if len(values["reconnect"].(map[string]interface{})) > 0 {
+		s.Reconnect = make(map[string]interface{})
+		for k, v := range values["reconnect"].(map[string]interface{}) {
+			s.Auth[k] = s.MapValue(v)
+		}	
 	}
 
-	s.SslConfig = make(map[string]interface{})
-	for k, v := range coerce.ToObject(values["sslConfig"]) {
-		s.Auth[k.(string)] := s.MapValue(v)
+	if len(values["sslConfig"].(map[string]interface{})) > 0 {
+		s.SslConfig = make(map[string]interface{})
+		for k, v := range values["sslConfig"].(map[string]interface{}) {
+			s.Auth[k] = s.MapValue(v)
+		}
 	}
 
-	s.Streaming = make(map[string]interface{})
-	for k, v := range coerce.ToObject(values["streaming"]) {
-		s.Auth[k.(string)] := s.MapValue(v)
+	if len(values["streaming"].(map[string]interface{})) > 0 {
+		s.Streaming = make(map[string]interface{})
+		for k, v := range values["streaming"].(map[string]interface{}) {
+			s.Auth[k] = s.MapValue(v)
+		}
 	}
+
+	return nil
 
 }
 
@@ -69,7 +84,8 @@ func (s *Settings) ToMap() map[string]interface{} {
 }
 
 func (s *Settings) MapValue(value interface{}) interface{} {
-	return coerce.ToAny(value)
+	anyValue, _ := coerce.ToAny(value)
+	return anyValue
 }
 
 type Input struct {
