@@ -161,7 +161,6 @@ func (h *Handler) handleMessage() {
 		case msg := <-h.stanMsgChannel:
 			var (
 				err error
-				// results map[string]interface{}
 			)
 			out := &Output{}
 			out.Payload = string(msg.Data)
