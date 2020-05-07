@@ -178,7 +178,7 @@ type Output struct {
 func (o *Output) FromMap(values map[string]interface{}) error {
 
 	var err error
-	o.Payload, err = coerce.ToString(values["payload"])
+	o.Payload, err = values["payload"]
 	if err != nil {
 		return err
 	}
@@ -187,7 +187,7 @@ func (o *Output) FromMap(values map[string]interface{}) error {
 
 func (o *Output) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"payload": string(o.Payload),
+		"payload": o.Payload,
 	}
 }
 

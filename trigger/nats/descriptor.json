@@ -136,7 +136,7 @@
   "output": [
     {
       "name": "payload",
-      "type": "string"
+      "type": "any"
     }
   ],
   "handler": {
