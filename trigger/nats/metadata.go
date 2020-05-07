@@ -172,16 +172,11 @@ func (h *HandlerSettings) ToMap() map[string]interface{} {
 }
 
 type Output struct {
-	Payload string `md:"payload"`
+	Payload interface{} `md:"payload"`
 }
 
 func (o *Output) FromMap(values map[string]interface{}) error {
-
-	var err error
-	o.Payload, err = values["payload"]
-	if err != nil {
-		return err
-	}
+	o.Payload = values["payload"]
 	return nil
 }
 
