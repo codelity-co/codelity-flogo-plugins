@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/project-flogo/core/data/coerce"
 	"github.com/project-flogo/core/support/log"
 	"github.com/project-flogo/core/trigger"
 
@@ -154,7 +153,7 @@ func (h *Handler) handleMessage() {
 				// results map[string]interface{}
 			)
 			out := &Output{}
-			out.Payload, err = coerce.ToBytes(msg.Data)
+			out.Payload = msg.Data
 			if err != nil {
 				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
 			}
@@ -168,7 +167,7 @@ func (h *Handler) handleMessage() {
 				// results map[string]interface{}
 			)
 			out := &Output{}
-			out.Payload, err = coerce.ToBytes(msg.Data)
+			out.Payload = msg.Data
 			if err != nil {
 				h.logger.Errorf("coerce error of payload data: %v", err)
 			}
