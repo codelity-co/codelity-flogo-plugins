@@ -3,6 +3,7 @@ package nats
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -163,7 +164,13 @@ func (h *Handler) handleMessage() {
 				err error
 			)
 			out := &Output{}
-			out.Payload = string(msg.Data)
+			payload := make(map[string]interface{})
+			err = json.Unmarshal(msg.Data, &payload)
+			if err != nil {
+				h.logger.Errorf("Cannot parse payload: %v", msg.Data)
+				continue
+			}
+			out.Payload = payload
 			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap)
 			if err != nil {
 				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)

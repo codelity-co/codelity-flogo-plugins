@@ -123,19 +123,16 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	a.logger.Debug("Got Input object successfully")
 	a.logger.Debugf("Input: %v", input)
 
-	a.logger.Debug("Converting input.Data to []byte...")
-	dataBytes := []byte(input.Data)
-	a.logger.Debug("Converted input.Data to []byte")
-
 	if !a.natsStreaming {
 		a.logger.Debug("Publishing data to NATS subject...")
-		if err = a.natsConn.Publish(input.Subject, dataBytes); err != nil {
+		if err = a.natsConn.Publish(input.Subject, []byte(input.Data)); err != nil {
 			a.logger.Errorf("Error publishing data to NATS subject: %v", err)
 			_ = a.OutputToContext(ctx, nil, err)
 			return true, err
 		}
 		a.logger.Debug("Published data to NATS subject")
 	} else {
+		
 		message := map[string]interface{}{
 			"subject": input.Subject,
 			"message": input.Data,
