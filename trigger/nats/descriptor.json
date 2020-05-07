@@ -135,7 +135,7 @@
   ],
   "output": [
     {
-      "name": "message",
+      "name": "payload",
       "type": "string"
     }
   ],
