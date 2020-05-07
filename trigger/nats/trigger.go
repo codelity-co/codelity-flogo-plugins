@@ -28,7 +28,7 @@ type Factory struct {
 
 // New trigger method of Factory
 func (*Factory) New(config *trigger.Config) (trigger.Trigger, error) {
-	
+
 	s := &Settings{}
 	err := s.FromMap(config.Settings)
 	if err != nil {
@@ -46,9 +46,9 @@ func (f *Factory) Metadata() *trigger.Metadata {
 
 // Trigger struct
 type Trigger struct {
-	id       string
+	id              string
 	triggerSettings *Settings
-	natsHandlers []*Handler
+	natsHandlers    []*Handler
 }
 
 // Metadata implements trigger.Trigger.Metadata
@@ -82,10 +82,10 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 
 		natsHandler := &Handler{
 			handlerSettings: handlerSettings,
-			logger: logger,
-			natsConn: nc,
-			stopChannel: stopChannel,
-			triggerHandler: handler,
+			logger:          logger,
+			natsConn:        nc,
+			stopChannel:     stopChannel,
+			triggerHandler:  handler,
 		}
 
 		if enableStreaming, ok := t.triggerSettings.Streaming["enableStreaming"]; ok {
@@ -127,17 +127,17 @@ func (t *Trigger) Stop() error {
 
 // Handler is a NATS subject handler
 type Handler struct {
-	handlerSettings	*HandlerSettings
-	logger         log.Logger
-	natsConn       *nats.Conn
-	natsMsgChannel chan *nats.Msg
-	natsStreaming  bool
+	handlerSettings  *HandlerSettings
+	logger           log.Logger
+	natsConn         *nats.Conn
+	natsMsgChannel   chan *nats.Msg
+	natsStreaming    bool
 	natsSubscription *nats.Subscription
-	stanConn       stan.Conn
-	stanMsgChannel chan *stan.Msg
+	stanConn         stan.Conn
+	stanMsgChannel   chan *stan.Msg
 	stanSubscription stan.Subscription
-	stopChannel    chan bool
-	triggerHandler trigger.Handler
+	stopChannel      chan bool
+	triggerHandler   trigger.Handler
 }
 
 func (h *Handler) handleMessage() {
@@ -153,10 +153,7 @@ func (h *Handler) handleMessage() {
 				// results map[string]interface{}
 			)
 			out := &Output{}
-			out.Payload = msg.Data
-			if err != nil {
-				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
-			}
+			out.Payload = string(msg.Data)
 			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap)
 			if err != nil {
 				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
@@ -167,10 +164,7 @@ func (h *Handler) handleMessage() {
 				// results map[string]interface{}
 			)
 			out := &Output{}
-			out.Payload = msg.Data
-			if err != nil {
-				h.logger.Errorf("coerce error of payload data: %v", err)
-			}
+			out.Payload = string(msg.Data)
 			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap)
 			if err != nil {
 				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
@@ -185,14 +179,14 @@ func (h *Handler) Start() error {
 	go h.handleMessage()
 	if len(h.handlerSettings.Queue) > 0 {
 		if !h.natsStreaming {
-			h.natsSubscription, err =  h.natsConn.QueueSubscribe(h.handlerSettings.Subject, h.handlerSettings.Queue, func(m *nats.Msg) {
+			h.natsSubscription, err = h.natsConn.QueueSubscribe(h.handlerSettings.Subject, h.handlerSettings.Queue, func(m *nats.Msg) {
 				h.natsMsgChannel <- m
 			})
 			if err != nil {
 				return err
 			}
 		} else {
-			h.stanSubscription, err = h.stanConn.QueueSubscribe(h.handlerSettings.ChannelId, h.handlerSettings.Queue, func(m *stan.Msg){
+			h.stanSubscription, err = h.stanConn.QueueSubscribe(h.handlerSettings.ChannelId, h.handlerSettings.Queue, func(m *stan.Msg) {
 				h.stanMsgChannel <- m
 			})
 			if err != nil {
@@ -208,14 +202,14 @@ func (h *Handler) Start() error {
 				return err
 			}
 		} else {
-			h.stanSubscription, err = h.stanConn.Subscribe(h.handlerSettings.ChannelId, func(m *stan.Msg){
+			h.stanSubscription, err = h.stanConn.Subscribe(h.handlerSettings.ChannelId, func(m *stan.Msg) {
 				h.stanMsgChannel <- m
 			})
 			if err != nil {
 				return err
 			}
 		}
-		
+
 	}
 	return nil
 }
@@ -242,11 +236,11 @@ func (h *Handler) Stop() error {
 
 func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error) {
 	var (
-		err error 
-		authOpts []nats.Option
+		err           error
+		authOpts      []nats.Option
 		reconnectOpts []nats.Option
 		sslConfigOpts []nats.Option
-		urlString string
+		urlString     string
 	)
 
 	// Check ClusterUrls
@@ -270,7 +264,7 @@ func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error
 	if err != nil {
 		return nil, err
 	}
-	
+
 	natsOptions := append(authOpts, reconnectOpts...)
 	natsOptions = append(natsOptions, sslConfigOpts...)
 
@@ -278,7 +272,7 @@ func getNatsConnection(logger log.Logger, settings *Settings) (*nats.Conn, error
 	if len(settings.ConnName) > 0 {
 		natsOptions = append(natsOptions, nats.Name(settings.ConnName))
 	}
-	
+
 	return nats.Connect(urlString, natsOptions...)
 
 }
@@ -313,7 +307,7 @@ func validateClusterURL(url string) error {
 	if (hostPort[0] != "nats") && (hostPort[0] != "tls") {
 		return fmt.Errorf("protocol schema [%v] is not nats or tls", hostPort[0])
 	}
-	
+
 	return nil
 }
 
@@ -362,7 +356,7 @@ func getNatsConnReconnectOpts(settings *Settings) ([]nats.Option, error) {
 			opts = append(opts, nats.MaxReconnects(maxReconnects.(int)))
 		}
 
-		// Don't randomize 
+		// Don't randomize
 		if dontRandomize, ok := settings.Reconnect["dontRandomize"]; ok {
 			if dontRandomize.(bool) {
 				opts = append(opts, nats.DontRandomize())
@@ -391,7 +385,7 @@ func getNatsConnSslConfigOpts(settings *Settings) ([]nats.Option, error) {
 
 	// Check sslConfig setting
 	if settings.SslConfig != nil {
-		
+
 		// Skip verify
 		if skipVerify, ok := settings.SslConfig["skipVerify"]; ok {
 			opts = append(opts, nats.Secure(&tls.Config{
@@ -422,14 +416,13 @@ func getNatsConnSslConfigOpts(settings *Settings) ([]nats.Option, error) {
 
 func getStanConnection(ts *Settings, conn *nats.Conn) (stan.Conn, error) {
 
-	var ( 
-		err error 
+	var (
+		err       error
 		clusterId interface{}
-		ok bool
-		hostname string
-		sc stan.Conn
+		ok        bool
+		hostname  string
+		sc        stan.Conn
 	)
-
 
 	clusterId, ok = ts.Streaming["clusterId"]
 	if !ok {

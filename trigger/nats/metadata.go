@@ -172,13 +172,13 @@ func (h *HandlerSettings) ToMap() map[string]interface{} {
 }
 
 type Output struct {
-	Payload []byte `md:"payload"`
+	Payload string `md:"payload"`
 }
 
 func (o *Output) FromMap(values map[string]interface{}) error {
 
 	var err error
-	o.Payload, err = coerce.ToBytes(values["payload"])
+	o.Payload, err = coerce.ToString(values["payload"])
 	if err != nil {
 		return err
 	}
