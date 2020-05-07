@@ -40,7 +40,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	
 	act := &Activity{
 		activitySettings: s,
-		loggger: logger,
+		logger: logger,
 		minioClient: minioClient,
 	} 
 
