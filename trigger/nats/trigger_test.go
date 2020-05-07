@@ -21,6 +21,11 @@ type NatsTriggerTestSuite struct {
 }
 
 func TestNatsTriggerTestSuite(t *testing.T) {
+	
+	suite.Run(t, new(NatsTriggerTestSuite))
+}
+
+func (suite *NatsTriggerTestSuite) SetupSuite() {
 	command := exec.Command("docker", "start", "nats-streaming")
 	err := command.Run()
 	if err != nil {
@@ -45,7 +50,6 @@ func TestNatsTriggerTestSuite(t *testing.T) {
 			panic(err)
 		}
 	}
-	suite.Run(t, new(NatsTriggerTestSuite))
 }
 
 func (suite *NatsTriggerTestSuite) SetupTest() {
@@ -58,7 +62,6 @@ func (suite *NatsTriggerTestSuite) SetupTest() {
 		"handlers": [
 			{
 				"settings": {
-					"async": true,
 					"subject": "flogo"
 				},
 				"action": {
