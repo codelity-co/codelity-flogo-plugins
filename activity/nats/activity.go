@@ -123,9 +123,9 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	a.logger.Debug("Got Input object successfully")
 	a.logger.Debugf("Input: %v", input)
 
-	a.logger.Debug("Converting input.Data to []uint8...")
-	dataBytes := []uint8(input.Data)
-	a.logger.Debug("Converted input.Data to []uint8")
+	a.logger.Debug("Converting input.Data to []byte...")
+	dataBytes := []byte(input.Data)
+	a.logger.Debug("Converted input.Data to []byte")
 
 	if !a.natsStreaming {
 		a.logger.Debug("Publishing data to NATS subject...")
@@ -138,10 +138,10 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	} else {
 		message := map[string]interface{}{
 			"subject": input.Subject,
-			"message": dataBytes,
+			"message": input.Data,
 		}
 
-		var messageBytes []uint8
+		var messageBytes []byte
 		messageBytes, err = json.Marshal(message)
 		if err != nil {
 			a.logger.Errorf("Marshal error: %v", err)
