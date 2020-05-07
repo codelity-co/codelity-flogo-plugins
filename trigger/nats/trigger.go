@@ -157,7 +157,7 @@ func (h *Handler) handleMessage() {
 			out.Payload = string(msg.Data)
 			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap)
 			if err != nil {
-				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
+				h.logger.Errorf("natsMsgChannel: ", err)
 			}
 		case msg := <-h.stanMsgChannel:
 			var (
@@ -167,13 +167,13 @@ func (h *Handler) handleMessage() {
 			payload := make(map[string]interface{})
 			err = json.Unmarshal(msg.Data, &payload)
 			if err != nil {
-				h.logger.Errorf("Cannot parse payload: %v", msg.Data)
+				h.logger.Errorf("stanMsgChannel: Cannot parse payload %v", msg.Data)
 				continue
 			}
 			out.Payload = payload
-			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap)
+			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap())
 			if err != nil {
-				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
+				h.logger.Errorf("stanMsgChannel: ", err)
 			}
 		}
 	}
