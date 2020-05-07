@@ -1,8 +1,7 @@
 package nats
 
 import (
-	"fmt"
-
+	"github.com/project-flogo/core/app/resolve"
 	"github.com/project-flogo/core/data/coerce"
 )
 
@@ -17,7 +16,6 @@ type Settings struct {
 }
 
 func (s *Settings) FromMap(values map[string]interface{}) error {
-	fmt.Println(values)
 
 	var (
 		err error
@@ -40,28 +38,40 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 	if values["auth"] != nil {
 		s.Auth = make(map[string]interface{})
 		for k, v := range values["auth"].(map[string]interface{}) {
-			s.Auth[k] = s.MapValue(v)
+			s.Auth[k], err = s.MapValue(v)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	if values["reconnect"] != nil {
 		s.Reconnect = make(map[string]interface{})
 		for k, v := range values["reconnect"].(map[string]interface{}) {
-			s.Reconnect[k] = s.MapValue(v)
+			s.Reconnect[k], err = s.MapValue(v)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	if values["sslConfig"] != nil {
 		s.SslConfig = make(map[string]interface{})
 		for k, v := range values["sslConfig"].(map[string]interface{}) {
-			s.SslConfig[k] = s.MapValue(v)
+			s.SslConfig[k], err = s.MapValue(v)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	if values["streaming"] != nil {
 		s.Streaming = make(map[string]interface{})
 		for k, v := range values["streaming"].(map[string]interface{}) {
-			s.Streaming[k] = s.MapValue(v)
+			s.Streaming[k], err = s.MapValue(v)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -83,9 +93,34 @@ func (s *Settings) ToMap() map[string]interface{} {
 
 }
 
-func (s *Settings) MapValue(value interface{}) interface{} {
-	anyValue, _ := coerce.ToAny(value)
-	return anyValue
+func (s *Settings) MapValue(value interface{}) (interface{}, error) {
+	var (
+		err      error
+		anyValue interface{}
+	)
+
+	switch val := value.(type) {
+	case string:
+		strVal := val
+		if len(strVal) > 0 && strVal[0] == '=' {
+			anyValue, err = resolve.Resolve(strVal[1:], nil)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			anyValue, err = coerce.ToAny(val)
+			if err != nil {
+				return nil, err
+			}
+		}
+	default:
+		anyValue, err = coerce.ToAny(val)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return anyValue, nil
 }
 
 type Input struct {
