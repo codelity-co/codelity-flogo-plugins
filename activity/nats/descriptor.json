@@ -116,7 +116,7 @@
       "properties": [
         {
           "name": "enableStreaming", 
-          "type": "bool",
+          "type": "boolean",
           "description": "Enable NATS Streaming",
           "default": false
         },

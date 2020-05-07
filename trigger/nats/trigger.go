@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/project-flogo/core/data/coerce"
-	"github.com/project-flogo/core/data/metadata"
 	"github.com/project-flogo/core/support/log"
 	"github.com/project-flogo/core/trigger"
 
@@ -30,8 +29,9 @@ type Factory struct {
 
 // New trigger method of Factory
 func (*Factory) New(config *trigger.Config) (trigger.Trigger, error) {
+	
 	s := &Settings{}
-	err := metadata.MapToStruct(config.Settings, s, true)
+	err := s.FromMap(config.Settings)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (t *Trigger) Initialize(ctx trigger.InitContext) error {
 
 		logger.Debugf("Mapping handler settings...")
 		handlerSettings := &HandlerSettings{}
-		if err := metadata.MapToStruct(handler.Settings(), handlerSettings, true); err != nil {
+		if err := handlerSettings.FromMap(handler.Settings()); err != nil {
 			return err
 		}
 		logger.Debugf("Mapped handler settings successfully")
