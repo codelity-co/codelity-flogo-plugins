@@ -170,7 +170,7 @@ func (h *Handler) handleMessage() {
 			out := &Output{}
 			out.Payload, err = coerce.ToBytes(msg.Data)
 			if err != nil {
-				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
+				h.logger.Errorf("coerce error of payload data: %v", err)
 			}
 			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap)
 			if err != nil {
