@@ -161,38 +161,33 @@ func (h *HandlerSettings) FromMap(values map[string]interface{}) error {
 	return nil
 }
 
+func (h *HandlerSettings) ToMap() map[string]interface{} {
+	return map[string]interface{}{
+		"subject": h.Subject,
+		"queue": h.Queue,
+		"channelId": h.ChannelId,
+		"durableName": h.DurableName,
+		"maxInFlight": h.MaxInFlight,
+	}
+}
+
 type Output struct {
-	Message string `md:"message"`
+	Payload []byte `md:"payload"`
 }
 
 func (o *Output) FromMap(values map[string]interface{}) error {
 
 	var err error
-	o.Message, err = coerce.ToString(values["message"])
+	o.Payload, err = coerce.ToBytes(values["payload"])
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
 func (o *Output) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"message": o.Message,
+		"payload": string(o.Payload),
 	}
 }
 
-// type Reply struct {
-// 	AReply interface{} `md:"aReply"`
-// }
-
-// func (r *Reply) FromMap(values map[string]interface{}) error {
-// 	r.AReply = values["aReply"]
-// 	return nil
-// }
-
-// func (r *Reply) ToMap() map[string]interface{} {
-// 	return map[string]interface{}{
-// 		"aReply": r.AReply,
-// 	}
-// }

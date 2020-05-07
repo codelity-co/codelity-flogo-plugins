@@ -154,7 +154,7 @@ func (h *Handler) handleMessage() {
 				// results map[string]interface{}
 			)
 			out := &Output{}
-			out.Message, err = coerce.ToString(msg.Data)
+			out.Payload, err = coerce.ToBytes(msg.Data)
 			if err != nil {
 				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
 			}
@@ -168,7 +168,7 @@ func (h *Handler) handleMessage() {
 				// results map[string]interface{}
 			)
 			out := &Output{}
-			out.Message, err = coerce.ToString(msg.Data)
+			out.Payload, err = coerce.ToBytes(msg.Data)
 			if err != nil {
 				h.logger.Errorf("Run action for handler [%v] failed for reason [%v] message lost", h.triggerHandler.Name(), err)
 			}
