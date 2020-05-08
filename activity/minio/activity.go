@@ -71,29 +71,37 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	a.logger.Debugf("Input: %v", input)
 
 	dataBytes := getDataBytes(input.Data)
+	var output Output := New
 	switch a.activitySettings.MethodName {
 	case "PutObject":
 		numberOfBytes, err := a.minioClient.PutObject(a.activitySettings.BucketName, input.ObjectName, bytes.NewReader(dataBytes), int64(len(dataBytes)), minio.PutObjectOptions{})
 		if err != nil {
-			_ = ctx.SetOutputObject(&Output{
-				Status: "ERROR", 
-				Result: map[string]interface{}{
-					"error": err.Error(),
-				},
-			})
+			a.logger.Errorf("Error in MinIO PutObject method: %v", err)
+			_ = a.OutputToContext(ctx, nil, err)
 			return true, err
 		}
-		if err := ctx.SetOutputObject(&Output{
-			Status: "SUCCESS",
-			Result: map[string]interface{}{
-				"bytes": numberOfBytes,
-			},
-		}); err != nil {
+		err = a.OutputToContext(ctx, map[string]interface{}{
+			"bytes": numberOfBytes
+		}, nil)
+		if err != nil {
+			a.logger.Errorf("Error setting output object in context: %v", err)
 			return true, err
 		}
 	}
 
 	return true, nil
+}
+
+func (a *Activity) OutputToContext(ctx activity.Context, result map[string]interface{}, err error) error {
+	a.logger.Debug("Createing Ouptut struct...")
+	var output *Output
+	if err != nil {
+		output = &Output{Status: "ERROR", Result: map[string]interface{}{"errorMessage": fmt.Sprintf("%v", err)}}
+	} else {
+		output = &Output{Status: "SUCCESS", Result: result}
+	}
+	a.logger.Debug("Setting output object in context...")
+	return ctx.SetOutputObject(output)
 }
 
 func getDataBytes(data interface{}) []byte {
