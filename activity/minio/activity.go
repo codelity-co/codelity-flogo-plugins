@@ -3,6 +3,7 @@ package minio
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/support/log"
@@ -71,7 +72,6 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	a.logger.Debugf("Input: %v", input)
 
 	dataBytes := getDataBytes(input.Data)
-	var output Output := New
 	switch a.activitySettings.MethodName {
 	case "PutObject":
 		numberOfBytes, err := a.minioClient.PutObject(a.activitySettings.BucketName, input.ObjectName, bytes.NewReader(dataBytes), int64(len(dataBytes)), minio.PutObjectOptions{})
@@ -81,7 +81,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 			return true, err
 		}
 		err = a.OutputToContext(ctx, map[string]interface{}{
-			"bytes": numberOfBytes
+			"bytes": numberOfBytes,
 		}, nil)
 		if err != nil {
 			a.logger.Errorf("Error setting output object in context: %v", err)
