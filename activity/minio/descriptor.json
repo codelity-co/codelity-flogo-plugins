@@ -43,6 +43,10 @@
       ]
     },
     {
+      "name": "methodOptions",
+      "type": "object"
+    },
+    {
       "name": "dataType",
       "type": "string",
       "enum": ["string", "binary"]
