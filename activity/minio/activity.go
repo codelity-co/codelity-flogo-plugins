@@ -32,12 +32,14 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 		return nil, err
 	}
 
-	logger.Debugf("Setting: %v", s)
+	logger.Debugf("From Map Setting: %v", s)
 
 	minioClient, err = minio.New(s.Endpoint, s.AccessKey, s.SecretKey, s.EnableSsl)
 	if err != nil {
+		logger.Errorf("MinIO connection error: %v", err)
 		return nil, err
 	}
+	logger.Debug("Got MinIO connection")
 
 	act := &Activity{
 		activitySettings: s,
@@ -45,6 +47,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 		minioClient:      minioClient,
 	}
 
+	logger.Debug("Finished New method of activity")
 	return act, nil
 }
 

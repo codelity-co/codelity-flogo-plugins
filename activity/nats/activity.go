@@ -67,9 +67,6 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	if enableStreaming, ok := s.Streaming["enableStreaming"]; ok {
 		logger.Debug("Enabling NATS streaming...")
 		act.natsStreaming = enableStreaming.(bool)
-		if err != nil {
-			return nil, err
-		}
 		if act.natsStreaming {
 			logger.Debug("Getting STAN connection...")
 			act.stanConn, err = getStanConnection(s.Streaming, nc)
