@@ -38,12 +38,12 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	act := &Activity{
 		activitySettings: s,
-		logger: logger,
-		minioClient: minioClient,
-	} 
+		logger:           logger,
+		minioClient:      minioClient,
+	}
 
 	return act, nil
 }
@@ -51,8 +51,8 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 // Activity is an sample Activity that can be used as a base to create a custom activity
 type Activity struct {
 	activitySettings *Settings
-	logger log.Logger
-	minioClient *minio.Client
+	logger           log.Logger
+	minioClient      *minio.Client
 }
 
 // Metadata returns the activity's metadata
@@ -63,26 +63,29 @@ func (a *Activity) Metadata() *activity.Metadata {
 // Eval implements api.Activity.Eval - Logs the Message
 func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 
-	input := Input{}
-	err = ctx.GetInputObject(&input)
+	a.logger.Debug("Running Eval method of activity...")
+	input := &Input{}
+	a.logger.Debug("Getting Input object from context...")
+	err = ctx.GetInputObject(input)
 	if err != nil {
+		a.logger.Errorf("Error getting Input object: %v", err)
+		_ = a.OutputToContext(ctx, nil, err)
 		return true, err
 	}
-
+	a.logger.Debug("Got Input object successfully")
 	a.logger.Debugf("Input: %v", input)
 
 	dataBytes := getDataBytes(input.Data)
 	switch a.activitySettings.MethodName {
 	case "PutObject":
+		a.logger.Debug("Call MinIO PutObject method")
 		numberOfBytes, err := a.minioClient.PutObject(a.activitySettings.BucketName, input.ObjectName, bytes.NewReader(dataBytes), int64(len(dataBytes)), minio.PutObjectOptions{})
 		if err != nil {
 			a.logger.Errorf("Error in MinIO PutObject method: %v", err)
 			_ = a.OutputToContext(ctx, nil, err)
 			return true, err
 		}
-		err = a.OutputToContext(ctx, map[string]interface{}{
-			"bytes": numberOfBytes,
-		}, nil)
+		err = a.OutputToContext(ctx, map[string]interface{}{"bytes": numberOfBytes}, nil)
 		if err != nil {
 			a.logger.Errorf("Error setting output object in context: %v", err)
 			return true, err
