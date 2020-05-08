@@ -152,10 +152,10 @@ type Output struct {
 	Status string `md:"status,required"`
 	Result map[string]interface{} `md:"result"`
 }
-
+ 
 func (o *Output) FromMap(values map[string]interface{}) error {
-	o.Status, _ = values["status"].(string)
-	o.Result, _ = values["result"].(map[string]interface{})
+	o.Status = values["status"].(string)
+	o.Result = values["result"].(map[string]interface{})
 	return nil
 }
 
