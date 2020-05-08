@@ -136,7 +136,10 @@ func (r *Input) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
-	r.Data = values["data"]
+	r.Data, err = coerce.ToAny(values["data"])
+	if err != nil {
+		return err
+	}
 	
 	return nil
 }
@@ -154,8 +157,18 @@ type Output struct {
 }
  
 func (o *Output) FromMap(values map[string]interface{}) error {
-	o.Status = values["status"].(string)
-	o.Result = values["result"].(map[string]interface{})
+	var err error
+
+	o.Status, err = coerce.ToString(values["status"])
+	if err != nil {
+		return err
+	}
+
+	o.Result, err = coerce.ToObject(values["result"])
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
