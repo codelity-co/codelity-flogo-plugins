@@ -1,0 +1,20 @@
+{
+  "name": "datetime",
+  "type": "flogo:function",
+  "version": "0.10.0",
+  "title": "datetimeFunctions",
+  "description": "datetimeFunctions",
+  "functions": [
+    {
+      "name": "utcnano",
+      "description": "return UTC Nano seconds",
+      "example": "datetime.utcNano()",
+      "return": {
+          "type": "int64"
+      },
+      "display": {
+          "visible": true
+      }
+    }
+  ]
+}
