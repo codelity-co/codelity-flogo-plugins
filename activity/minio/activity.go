@@ -79,6 +79,7 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	a.logger.Debugf("Input: %v", input)
 
 	dataBytes := getDataBytes(input.Data)
+	a.logger.Debugf("a.activitySettings: %v", a.activitySettings)
 	switch a.activitySettings.MethodName {
 	case "PutObject":
 		a.logger.Debug("Call MinIO PutObject method")
