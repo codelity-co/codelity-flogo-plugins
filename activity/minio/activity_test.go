@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 	"testing"
+	"time"
 
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/support/test"
@@ -16,6 +17,10 @@ type MinioActivityTestSuite struct {
 }
 
 func TestMinioActivityTestSuite(t *testing.T) {
+	suite.Run(t, new(MinioActivityTestSuite))
+}
+
+func (suite *MinioActivityTestSuite) SetupSuite() {
 	command := exec.Command("docker", "start", "minio")
 	err := command.Run()
 	if err != nil {
@@ -26,8 +31,8 @@ func TestMinioActivityTestSuite(t *testing.T) {
 			fmt.Println(err.Error())
 			panic(err)
 		}
+		time.Sleep(5 * time.Second)
 	}
-	suite.Run(t, new(MinioActivityTestSuite))
 }
 
 func (suite *MinioActivityTestSuite) SetupTest() {}
@@ -44,32 +49,6 @@ func (suite *MinioActivityTestSuite) TestMinioActivity_Settings() {
 	t := suite.T()
 
 	settings := &Settings{
-		Endpoint: "miio:9000",
-		AccessKey: "minio",
-		SecretKey: "minio123", 
-		EnableSsl: false,
-		MethodName: "PutObject",
-		DataType: "string",
-	}
-	
-	iCtx := test.NewActivityInitContext(settings, nil)
-	_, err := New(iCtx)
-	assert.NotNil(t, err)
-
-	settings = &Settings{
-		Endpoint: "minio:9000",
-		AccessKey: "minio123",
-		SecretKey: "minio123", 
-		EnableSsl: false,
-		MethodName: "PutObject",
-		DataType: "string",
-	}
-
-	iCtx = test.NewActivityInitContext(settings, nil)
-	_, err = New(iCtx)
-	assert.NotNil(t, err)
-
-	settings = &Settings{
 		Endpoint: "localhost:9000",
 		AccessKey: "minioadmin",
 		SecretKey: "minioadmin", 
@@ -79,8 +58,8 @@ func (suite *MinioActivityTestSuite) TestMinioActivity_Settings() {
 		DataType: "string",
 	}
 
-	iCtx = test.NewActivityInitContext(settings, nil)
-	_, err = New(iCtx)
+	iCtx := test.NewActivityInitContext(settings, nil)
+	_, err := New(iCtx)
 	assert.Nil(t, err)
 }
 
