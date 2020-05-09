@@ -26,8 +26,8 @@ var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})
 func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	var (
-		err error 
-		nc *nats.Conn
+		err error
+		nc  *nats.Conn
 	)
 	logger := ctx.Logger()
 
@@ -69,7 +69,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 		act.natsStreaming = enableStreaming.(bool)
 		if act.natsStreaming {
 			logger.Debug("Getting STAN connection...")
-			act.stanConn, err = getStanConnection(s.Streaming, nc)
+			act.stanConn, err = getStanConnection(logger, s.Streaming, nc)
 			if err != nil {
 				logger.Errorf("STAN connection error: %v", err)
 				return nil, err
@@ -78,7 +78,6 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 		}
 		logger.Debug("Enabled NATS streaming successfully")
 	}
-
 
 	logger.Debug("Finished New method of activity")
 	return act, nil
@@ -129,7 +128,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		}
 		a.logger.Debug("Published data to NATS subject")
 	} else {
-		
+
 		message := map[string]interface{}{
 			"subject": input.Subject,
 			"message": input.Data,
@@ -374,7 +373,7 @@ func getNatsConnSslConfigOpts(logger log.Logger, settings *Settings) ([]nats.Opt
 	return opts, nil
 }
 
-func getStanConnection(mapping map[string]interface{}, conn *nats.Conn) (stan.Conn, error) {
+func getStanConnection(logger log.Logger, mapping map[string]interface{}, conn *nats.Conn) (stan.Conn, error) {
 
 	var (
 		err       error
@@ -389,16 +388,12 @@ func getStanConnection(mapping map[string]interface{}, conn *nats.Conn) (stan.Co
 	}
 
 	clusterID = mapping["clusterId"].(string)
-
+	logger.Debugf("clusterID: %v", clusterID)
 	hostname, err = os.Hostname()
 	hostname = strings.Split(hostname, ".")[0]
 	hostname = strings.Split(hostname, ":")[0]
-
-	fmt.Println(hostname)
-
-	if err != nil {
-		return nil, err
-	}
+	logger.Debugf("hostname: %v", hostname)
+	logger.Debugf("natsConn: %v", conn)
 
 	sc, err = stan.Connect(clusterID, hostname, stan.NatsConn(conn))
 	if err != nil {
