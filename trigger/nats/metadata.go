@@ -94,9 +94,8 @@ func (s *Settings) MapValue(value interface{}) (interface{}, error) {
 
 	switch val := value.(type) {
 	case string:
-		strVal := val
-		if len(strVal) > 0 && strVal[0] == '=' {
-			anyValue, err = resolve.Resolve(strVal[1:], nil)
+		if len(val) > 0 && val[0] == '=' {
+			anyValue, err = resolve.Resolve(val[1:], nil)
 			if err != nil {
 				return nil, err
 			}
@@ -106,6 +105,17 @@ func (s *Settings) MapValue(value interface{}) (interface{}, error) {
 				return nil, err
 			}
 		}
+		
+	case map[string]interface{}:
+		dataMap := make(map[string]interface{})
+		for k, v := range val {
+			dataMap[k], err = s.MapValue(v)
+			if err != nil {
+				return nil, err
+			}
+		}
+		anyValue = dataMap
+
 	default:
 		anyValue, err = coerce.ToAny(val)
 		if err != nil {
