@@ -4,7 +4,7 @@ weight: 4705
 -->
 # MinIO
 
-**This plugin is stll IN PROGRESS**
+**This plugin is in ALPHA stage**
 
 This activity allows you to manage MinIO object.
 
@@ -24,12 +24,22 @@ flogo install github.com/codelity-co/codelity-flogo-plugins/activity/minio
   | accessKey           | string | Access Key
   | secretKey           | string | Secret Key
   | enableSSL           | bool   | Enable SSL connection
+  | bucketName          | string | MinIO bucket name
+  | region              | string | MinIO Region/Zone name
+  | methodName          | string | MinIO SDK method name
+  | methodOptions       | object | MinIO method options
 
-### Handler Settings
+### Input
   | Name                | Type   | Description
   | :---                | :---   | :---
-  | method              | string | Minio SDK method - ***REQUIRED***
-  | parmas              | object | Method parameters - ***REQUIRED***
+  | objectName          | string | Minio object name - ***REQUIRED***
+  | data                | any    | data - ***REQUIRED***
+
+## Output
+  | Name                | Type   | Description
+  | :---                | :---   | :---
+  | status              | string | status text - ***REQUIRED***
+  | result              | object | result object - ***REQUIRED***
 
 #### Method
 
@@ -50,25 +60,15 @@ Method options are documented in [MinIO Golang SDK](https://docs.min.io/docs/gol
   "ref": "github.com/codelity-co/codelity-flogo-plugins/activity/minio",
   "settings": {
     "endpoint" : "minio:9000",
-    "accessKey": "minio",
-    "secretKey": "minio123",
+    "accessKey": "minioadmin",
+    "secretKey": "minioadmin",
     "enableSsl": false,
-
-
+    "bucketName": "flogo",
+    "methodName": "PutObject"
   },
   "input": {
-    "method": "PutObject",
-    "params": {
-      "bucketName": "flogo",
-      "objectName": "inbox/testing.json",
-      "stringData": "{\"abc\": \"123\"}"
-    }
-  },
-  "output": {
-    "status": "SUCCESS",
-    "result": {
-      "bytes": 14,
-    }
+    "objectName": "inbox/test.json",
+    "data": "{\"abc\": \"123\"}"
   }
 }
 ```

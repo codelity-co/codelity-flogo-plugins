@@ -1,9 +1,10 @@
 {
   "name": "datetimex",
   "type": "flogo:function",
-  "version": "0.10.0",
-  "title": "datetimeFunctions",
-  "description": "datetimeFunctions",
+  "version": "0.3.0",
+  "title": "datetimexFunctions",
+  "description": "datetimexFunctions",
+  "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/tree/master/function/datetimex",
   "functions": [
     {
       "name": "utcnano",
