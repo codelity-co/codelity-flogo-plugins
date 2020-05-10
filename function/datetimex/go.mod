@@ -1,4 +1,4 @@
-module github.com/codelity-co/codelity-flogo-plugins/function/datetime
+module github.com/codelity-co/codelity-flogo-plugins/function/datetimex
 
 go 1.13
 

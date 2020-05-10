@@ -1,5 +1,5 @@
 {
-  "name": "datetime",
+  "name": "datetimex",
   "type": "flogo:function",
   "version": "0.10.0",
   "title": "datetimeFunctions",
@@ -8,7 +8,7 @@
     {
       "name": "utcnano",
       "description": "return UTC Nano seconds",
-      "example": "datetime.utcNano()",
+      "example": "datetimex.utcNano()",
       "return": {
           "type": "int64"
       },
