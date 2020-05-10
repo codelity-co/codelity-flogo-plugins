@@ -12,7 +12,6 @@ type Settings struct {
 	Reconnect   map[string]interface{} `md:"reconnect"` // Reconnect setting
 	SslConfig   map[string]interface{} `md:"sslConfig"` // SSL config setting
 	Streaming   map[string]interface{} `md:"streaming"` // NATS streaming config
-	DataType    string                 `md:"dataType"`  // Data type
 }
 
 func (s *Settings) FromMap(values map[string]interface{}) error {
@@ -26,11 +25,6 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 	}
 
 	s.ConnName, err = coerce.ToString(values["connName"])
-	if err != nil {
-		return err
-	}
-
-	s.DataType, err = coerce.ToString(values["dataType"])
 	if err != nil {
 		return err
 	}
@@ -84,7 +78,6 @@ func (s *Settings) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"clusterUrls": s.ClusterUrls,
 		"connName":    s.ConnName,
-		"dataType":    s.DataType,
 		"auth":        s.Auth,
 		"reconnect":   s.Reconnect,
 		"sslConfig":   s.SslConfig,
@@ -129,6 +122,7 @@ type HandlerSettings struct {
 	ChannelId string `md:"channelId"`
 	DurableName string `md:"durableName"`
 	MaxInFlight int `md:"maxInFlight"`
+	DataFormat string `md:"dataFormat"`
 }
 
 func (h *HandlerSettings) FromMap(values map[string]interface{}) error {
@@ -158,6 +152,11 @@ func (h *HandlerSettings) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
+	h.DataFormat, err = coerce.ToString(values["dataFormat"])
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -168,6 +167,7 @@ func (h *HandlerSettings) ToMap() map[string]interface{} {
 		"channelId": h.ChannelId,
 		"durableName": h.DurableName,
 		"maxInFlight": h.MaxInFlight,
+		"dataFormat": h.DataFormat,
 	}
 }
 
