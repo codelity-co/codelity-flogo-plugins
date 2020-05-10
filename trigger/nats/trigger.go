@@ -154,7 +154,11 @@ func (h *Handler) handleMessage() {
 				// results map[string]interface{}
 			)
 			out := &Output{}
-			out.Payload = string(msg.Data)
+			out.Payload, err = getPayloadData(h.handlerSettings.DataFormat, msg.Data)
+			if err != nil {
+				h.logger.Errorf("natsMsgChannel: Cannot parse payload %v", msg.Data)
+				continue
+			}
 			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap)
 			if err != nil {
 				h.logger.Errorf("natsMsgChannel: ", err)
@@ -164,13 +168,11 @@ func (h *Handler) handleMessage() {
 				err error
 			)
 			out := &Output{}
-			payload := make(map[string]interface{})
-			err = json.Unmarshal(msg.Data, &payload)
+			out.Payload, err = getPayloadData(h.handlerSettings.DataFormat, msg.Data)
 			if err != nil {
 				h.logger.Errorf("stanMsgChannel: Cannot parse payload %v", msg.Data)
 				continue
 			}
-			out.Payload = payload
 			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap())
 			if err != nil {
 				h.logger.Errorf("stanMsgChannel: ", err)
@@ -451,4 +453,22 @@ func getStanConnection(ts *Settings, conn *nats.Conn) (stan.Conn, error) {
 	}
 
 	return sc, nil
+}
+
+func getPayloadData(dataFormat string, data []byte) (interface{}, error) {
+	var outputVar interface{}
+	outputVar = nil
+	switch dataFormat {
+	case "string":
+			outputVar = string(data)
+	case "json":
+		dataMap := make(map[string]interface{})
+		err := json.Unmarshal(data, &dataMap)
+		if err != nil {
+			return nil, err
+		}
+		outputVar = dataMap
+		return outputVar, nil
+	}
+	return outputVar, fmt.Errorf("unknown data format")
 }

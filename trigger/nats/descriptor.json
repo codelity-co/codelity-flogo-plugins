@@ -166,6 +166,13 @@
         "type": "integer",
         "description": "NATS streaming max subscriber in-flight messages",
         "default": 0
+      },
+      {
+        "name": "dataFormat",
+        "type": "string",
+        "description": "Payload data parsing format",
+        "enum": ["string", "json"],
+        "default": "json"
       }
     ]
   }
