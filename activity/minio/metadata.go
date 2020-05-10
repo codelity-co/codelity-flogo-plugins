@@ -14,7 +14,6 @@ type Settings struct {
 	Region string `md:"region"`
 	MethodName string `md:"methodName,required"` 
 	MethodOptions map[string]interface{} `md:"methodOptions"`
-	DataType string `md:"dataType,required"`
 }
 
 func (s *Settings) FromMap(values map[string]interface{}) error {
@@ -58,11 +57,6 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
-	s.DataType, err = coerce.ToString(values["dataType"])
-	if err != nil {
-		return err
-	}
-
 	if values["methodOptions"] != nil {
 		s.MethodOptions = make(map[string]interface{})
 		for k, v := range values["methodOptions"].(map[string]interface{}) {
@@ -88,7 +82,6 @@ func (s *Settings) ToMap() map[string]interface{} {
 		"region": s.Region,
 		"methodName": s.MethodName,
 		"methodOptions": s.MethodOptions,
-		"dataType":    s.DataType,
 	}
 
 }
@@ -101,9 +94,8 @@ func (s *Settings) MapValue(value interface{}) (interface{}, error) {
 
 	switch val := value.(type) {
 	case string:
-		strVal := val
-		if len(strVal) > 0 && strVal[0] == '=' {
-			anyValue, err = resolve.Resolve(strVal[1:], nil)
+		if len(val) > 0 && val[0] == '=' {
+			anyValue, err = resolve.Resolve(val[1:], nil)
 			if err != nil {
 				return nil, err
 			}

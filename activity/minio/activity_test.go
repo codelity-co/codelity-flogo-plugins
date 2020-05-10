@@ -31,7 +31,7 @@ func (suite *MinioActivityTestSuite) SetupSuite() {
 			fmt.Println(err.Error())
 			panic(err)
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 }
 
@@ -55,7 +55,6 @@ func (suite *MinioActivityTestSuite) TestMinioActivity_Settings() {
 		EnableSsl: false,
 		BucketName: "flogo",
 		MethodName: "PutObject",
-		DataType: "string",
 	}
 
 	iCtx := test.NewActivityInitContext(settings, nil)
@@ -73,7 +72,6 @@ func (suite *MinioActivityTestSuite) TestMinioActivity_PutObject() {
 		EnableSsl: false,
 		BucketName: "flogo",
 		MethodName: "PutObject",
-		DataType: "string",
 	}
 	iCtx := test.NewActivityInitContext(settings, nil)
 	act, err := New(iCtx)
