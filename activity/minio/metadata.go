@@ -105,6 +105,17 @@ func (s *Settings) MapValue(value interface{}) (interface{}, error) {
 				return nil, err
 			}
 		}
+
+	case map[string]interface{}:
+		dataMap := make(map[string]interface{})
+		for k, v := range val {
+			dataMap[k], err = s.MapValue(v)
+			if err != nil {
+				return nil, err
+			}
+		}
+		anyValue = dataMap
+		
 	default:
 		anyValue, err = coerce.ToAny(val)
 		if err != nil {
