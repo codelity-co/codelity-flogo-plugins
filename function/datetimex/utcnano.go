@@ -1,4 +1,4 @@
-package datetime
+package datetimex
 
 import (
 	"github.com/project-flogo/core/data"
