@@ -6,7 +6,7 @@ weight: 4705
 
 **This plugin is in ALPHA stage**
 
-This trigger allows you to listen to messages on NATS.
+This trigger allows you to publish messages on NATS/STAN.
 
 ## Installation
 
@@ -58,22 +58,19 @@ flogo install github.com/codelity-co/codelity-flogo-plugins/trigger/nats
   | enableStreaming     | bool   | Enable NATS streaming, defaults to false
   | clusterId           | string | NATS Streaming cluster id
 
-### Handler Settings
+### Input
   | Name                | Type   | Description
   | :---                | :---   | :---
-  | subject             | string | The subject to listen on - ***REQUIRED***
-  | queue               | string | Subscriber queue group
-  | channelId           | string | The NATS Streaming Channel ID
-  | durableName         | string | The NATS Streaming Durable Name
-  | maxInFlight         | int    | NATS Streaming subscriber maxInFlight
+  | subject             | string | Message subject - ***REQUIRED***
+  | channelId           | string | NATS Streaming channel id - ***REQUIRED*** if enableStreaming is true
+  | data                | string | Message data
+  | receivedTimestamp   | double | Received timestamp in milliseconds
 
 ### Output:
-
-| Name          | Type   | Description
-| :---          | :---   | :---
-| message       | string | The message received
-| subject       | string | The NATS subject
-
+  | Name          | Type   | Description
+  | :---          | :---   | :---
+  | status        | string | Activity status text - ***REQUIRED***
+  | result        | object | Result object
 
 #### Subject
 NATS provides two wildcards that can take the place of one or more elements in a dot-separated subject. Subscribers can use these wildcards to listen to multiple subjects with a single subscription but Publishers will always use a fully specified subject, without the wildcard.
@@ -86,27 +83,16 @@ The second wildcard is > which will match one or more tokens, and can only appea
 
 ```json
 {
-  "id": "nats-trigger",
-  "name": "NATS Trigger",
-  "ref": "github.com/codelity-co/codelity-flogo-plugins/trigger/nats",
+  "id": "codelity-nats-activity",
+  "name": "Codelity NATS Activity",
+  "ref": "github.com/codelity-co/codelity-flogo-plugins/activity/nats",
   "settings": {
-      "clusterUrls" : "nats://localhost:4222",
-     	"connName":"NATS connection"
+    "clusterUrls" : "nats://localhost:4222",
+    "connName":"NATS connection"
   },
-  "handlers": {
-    "settings": {
-    	"subject": "flogo"
-    },
-    "action": {
-      "ref": "github.com/project-flogo/flow",
-        "settings": {
-          "flowURI": "res://flow:mqtt_to_stan_flow"
-        },
-        "input":{
-          "payload": "=$.payload"
-        }
-      }
-    }
+  "input": {
+    "subject": "flogo",
+    "data": "{\"abc\": \"123\"}"
   }
 }
 ```

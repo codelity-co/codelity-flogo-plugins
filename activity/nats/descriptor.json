@@ -1,7 +1,7 @@
 {
   "name": "codelity-nats-activity",
   "type": "flogo:activity",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "title": "Codelity NATS Activity",
   "description": "Codelity NATS Activity",
   "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/activity/nats",
@@ -126,18 +126,14 @@
           "description": "NATS streaming cluster id"
         }
       ]
-    },
-    {
-      "name": "dataType",
-      "type": "string",
-      "enum": ["string", "binary"]
     }
   ],
   "input": [
     {
       "name": "subject",
       "type": "string",
-      "description": "NATS subject"
+      "description": "Message subject",
+      "required": true
     },
     {
       "name": "channelId",
@@ -146,7 +142,14 @@
     }, 
     {
       "name": "data",
-      "type": "string"
+      "type": "string",
+      "description": "Message data",
+      "required": true
+    },
+    {
+      "name": "receivedTimestamp",
+      "type": "double",
+      "description": "Message received timestmap"
     }
   ],
   "output": [

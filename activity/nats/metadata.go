@@ -124,17 +124,20 @@ func (s *Settings) MapValue(value interface{}) (interface{}, error) {
 }
 
 type Input struct {
-	Subject   string `md:"subject"`
+	Subject   string `md:"subject,required"`
 	ChannelId string `md:"channelId"`
-	Data      string `md:"data"`
+	Data      string `md:"data,required"`
+	ReceivedTimestamp float64 `md:"receivedTimestmap"`
 }
 
 func (i *Input) FromMap(values map[string]interface{}) error {
 	var err error
+
 	i.Subject, err = coerce.ToString(values["subject"])
 	if err != nil {
 		return err
 	}
+
 	i.ChannelId, err = coerce.ToString(values["channelId"])
 	if err != nil {
 		return err
@@ -144,15 +147,27 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	if values["receivedTimestamp"] != nil {
+		i.ReceivedTimestamp, err = coerce.ToFloat64(values["receivedTimestamp"])
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 func (i *Input) ToMap() map[string]interface{} {
-	return map[string]interface{}{
+	dataMap := map[string]interface{}{
 		"subject":   i.Subject,
 		"channelId": i.ChannelId,
 		"data":      i.Data,
 	}
+	if i.ReceivedTimestamp > float64(0) {
+		dataMap["receivedTimestamp"] = i.ReceivedTimestamp
+	}
+	return dataMap
 }
 
 type Output struct {

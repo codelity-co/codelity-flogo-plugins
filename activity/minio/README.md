@@ -4,7 +4,7 @@ weight: 4705
 -->
 # MinIO
 
-**This plugin is stll IN PROGRESS**
+**This plugin is in ALPHA stage**
 
 This activity allows you to manage MinIO object.
 
@@ -29,7 +29,7 @@ flogo install github.com/codelity-co/codelity-flogo-plugins/activity/minio
   | methodName          | string | MinIO SDK method name
   | methodOptions       | object | MinIO method options
 
-### Handler Settings
+### Input
   | Name                | Type   | Description
   | :---                | :---   | :---
   | objectName          | string | Minio object name - ***REQUIRED***
@@ -64,18 +64,11 @@ Method options are documented in [MinIO Golang SDK](https://docs.min.io/docs/gol
     "secretKey": "minioadmin",
     "enableSsl": false,
     "bucketName": "flogo",
-    "region": "zone-0",
     "methodName": "PutObject"
   },
   "input": {
     "objectName": "inbox/test.json",
     "data": "{\"abc\": \"123\"}"
-  },
-  "output": {
-    "status": "SUCCESS",
-    "result": {
-      "bytes": 14,
-    }
   }
 }
 ```

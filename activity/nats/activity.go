@@ -109,6 +109,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 
 	a.logger.Debug("Running Eval method of activity...")
 	input := &Input{}
+
 	a.logger.Debug("Getting Input object from context...")
 	err = ctx.GetInputObject(input)
 	if err != nil {
@@ -119,29 +120,33 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	a.logger.Debug("Got Input object successfully")
 	a.logger.Debugf("Input: %v", input)
 
+	payload := map[string]interface{}{
+		"subject": input.Subject,
+		"message": input.Data,
+		"receivedTimestamp": input.ReceivedTimestamp,
+		"streamingTimestamp": float64(time.Now().UTC().UnixNano())/float64(1000000),
+	}
+	var payloadBytes []byte
+	payloadBytes, err = json.Marshal(payload)
+	if err != nil {
+		a.logger.Errorf("Marshal error: %v", err)
+		return true, err
+	}
+
 	if !a.natsStreaming {
+
 		a.logger.Debug("Publishing data to NATS subject...")
-		if err = a.natsConn.Publish(input.Subject, []byte(input.Data)); err != nil {
+		if err = a.natsConn.Publish(input.Subject, payloadBytes); err != nil {
 			a.logger.Errorf("Error publishing data to NATS subject: %v", err)
 			_ = a.OutputToContext(ctx, nil, err)
 			return true, err
 		}
 		a.logger.Debug("Published data to NATS subject")
+
 	} else {
 
-		message := map[string]interface{}{
-			"subject": input.Subject,
-			"message": input.Data,
-		}
-
-		var messageBytes []byte
-		messageBytes, err = json.Marshal(message)
-		if err != nil {
-			a.logger.Errorf("Marshal error: %v", err)
-			return true, err
-		}
 		a.logger.Debug("Publishing data to STAN Channel...")
-		result["ackedNuid"], err = a.stanConn.PublishAsync(input.ChannelId, messageBytes, func(ackedNuid string, err error) {
+		result["ackedNuid"], err = a.stanConn.PublishAsync(input.ChannelId, payloadBytes, func(ackedNuid string, err error) {
 			if err != nil {
 				a.logger.Errorf("STAN acknowledgement error: %v", err)
 			}
@@ -390,6 +395,9 @@ func getStanConnection(logger log.Logger, mapping map[string]interface{}, conn *
 	clusterID = mapping["clusterId"].(string)
 	logger.Debugf("clusterID: %v", clusterID)
 	hostname, err = os.Hostname()
+	if err != nil {
+		return nil, err
+	}
 	hostname = strings.Split(hostname, ".")[0]
 	hostname = strings.Split(hostname, ":")[0]
 	logger.Debugf("hostname: %v", hostname)
