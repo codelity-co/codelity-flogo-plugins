@@ -43,6 +43,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 
 	input := &Input{}
 	err = ctx.GetInputObject(input)
+	ctx.Logger().Debugf("Input: %v", input)
 	if err != nil {
 		return true, err
 	}
@@ -52,9 +53,8 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		outValue[k], err = input.MapValue(v)
 	}
 
-	ctx.Logger().Debugf("Input: %v", input)
-
 	output := &Output{OutVar: outValue}
+	ctx.Logger().Debugf("Output: %v", output)
 	err = ctx.SetOutputObject(output)
 	if err != nil {
 		return true, err

@@ -1,11 +1,10 @@
 {
-  "name": "codelity-varmapping",
+  "name": "codelity-varmapping-activity",
   "type": "flogo:activity",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "title": "Codelity Variable Mapping Activity",
   "description": "Codelity Variable Mapping Activity",
   "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/activity/varmapping",
-  "settings": [],
   "input": [
     {
       "name": "in",
