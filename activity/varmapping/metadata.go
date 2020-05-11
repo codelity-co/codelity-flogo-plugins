@@ -1,6 +1,7 @@
 package varmapping
 
 import (
+	"fmt"
 	"github.com/project-flogo/core/data/coerce"
 	"github.com/project-flogo/core/app/resolve"
 )
@@ -12,11 +13,22 @@ type Input struct {
 }
 
 func (i *Input) FromMap(values map[string]interface{}) error {
-	var err error 
+	var (
+		err error 
+		inValue interface{}
+		outValue interface{}
+	)
 
-	i.InVar, err = coerce.ToAny(values["in"])
+	inValue, err = coerce.ToAny(values["in"])
 	if err != nil {
 		return err
+	}
+
+	switch in := inValue.(type) {
+	case map[string]interface{}:
+		i.InVar = i.MapValue(in)
+	default:
+		return fmt.Errorf("Type of 'in' must be map[string]interface{}")
 	}
 
 	return nil
