@@ -135,6 +135,10 @@
   ],
   "output": [
     {
+      "name": "payloadFormat",
+      "type": "string"
+    },
+    {
       "name": "payload",
       "type": "any"
     }
