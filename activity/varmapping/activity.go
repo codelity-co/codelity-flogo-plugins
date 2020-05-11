@@ -1,8 +1,6 @@
 package varmapping
 
 import (
-	"reflect"
-
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/metadata"
 )
@@ -43,7 +41,6 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 
 	var (
 		err      error
-		outValue interface{}
 	)
 
 	input := &Input{}
@@ -53,7 +50,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		return true, err
 	}
 
-	output := &Output{OutVar: outValue}
+	output := &Output{OutVar: input.InVar}
 	ctx.Logger().Debugf("Output: %v", output)
 
 	err = ctx.SetOutputObject(output)
