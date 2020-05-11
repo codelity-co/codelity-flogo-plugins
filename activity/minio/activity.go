@@ -64,7 +64,9 @@ func (a *Activity) Metadata() *activity.Metadata {
 }
 
 // Eval implements api.Activity.Eval - Logs the Message
-func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
+func (a *Activity) Eval(ctx activity.Context) (bool, error) {
+
+	var err error
 
 	a.logger.Debug("Running Eval method of activity...")
 	input := &Input{}
@@ -78,7 +80,16 @@ func (a *Activity) Eval(ctx activity.Context) (done bool, err error) {
 	a.logger.Debug("Got Input object successfully")
 	a.logger.Debugf("Input: %v", input)
 
-	dataBytes := getDataBytes(input.Data)
+	var dataBytes []byte
+	if input.Data != nil {
+		dataBytes, err = json.Marshal(input.Data)
+		if err != nil {
+			a.logger.Errorf("Error marshalling input data: %v", err)
+			_ = a.OutputToContext(ctx, nil, err)
+			return true, err
+		}
+	}
+
 	a.logger.Debugf("a.activitySettings: %v", a.activitySettings)
 	switch a.activitySettings.MethodName {
 	case "PutObject":
@@ -109,17 +120,4 @@ func (a *Activity) OutputToContext(ctx activity.Context, result map[string]inter
 	}
 	a.logger.Debug("Setting output object in context...")
 	return ctx.SetOutputObject(output)
-}
-
-func getDataBytes(data interface{}) []byte {
-	switch value := data.(type) {
-	case string:
-		return []byte(value)
-	case map[string]interface{}:
-		dataBytes, _ := json.Marshal(value)
-		return dataBytes
-	case []byte:
-		return value
-	}
-	return nil
 }
