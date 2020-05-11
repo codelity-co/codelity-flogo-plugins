@@ -39,7 +39,10 @@ func (a *Activity) Metadata() *activity.Metadata {
 // Eval implements api.Activity.Eval - Logs the Message
 func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 
-	var err error
+	var (
+		err      error
+		outValue interface{}
+	)
 
 	input := &Input{}
 	err = ctx.GetInputObject(input)
@@ -48,13 +51,14 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		return true, err
 	}
 
-	outValue := make(map[string]interface{})
-	for k, v := range input.InVar {
-		outValue[k], err = input.MapValue(v)
+	outValue, err = input.MapValue(input.InVar)
+	if err != nil {
+		return true, err
 	}
-
+	
 	output := &Output{OutVar: outValue}
 	ctx.Logger().Debugf("Output: %v", output)
+
 	err = ctx.SetOutputObject(output)
 	if err != nil {
 		return true, err
