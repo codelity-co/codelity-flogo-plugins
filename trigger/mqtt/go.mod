@@ -1,4 +1,4 @@
-module github.com/project-flogo/edge-contrib/trigger/mqtt
+module github.com/codelity-co/codelity-flogo-plugins/trigger/mqtt
 
 go 1.12
 
