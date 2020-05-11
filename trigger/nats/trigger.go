@@ -159,6 +159,7 @@ func (h *Handler) handleMessage() {
 				h.logger.Errorf("natsMsgChannel: Cannot parse payload %v", msg.Data)
 				continue
 			}
+			out.PayloadFormat = fmt.Sprintf("%v", reflect.TypeOf(out.Payload))
 			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap)
 			if err != nil {
 				h.logger.Errorf("natsMsgChannel: ", err)
@@ -173,6 +174,7 @@ func (h *Handler) handleMessage() {
 				h.logger.Errorf("stanMsgChannel: Cannot parse payload %v", msg.Data)
 				continue
 			}
+			out.PayloadFormat = fmt.Sprintf("%v", reflect.TypeOf(out.Payload))
 			_, err = h.triggerHandler.Handle(context.Background(), out.ToMap())
 			if err != nil {
 				h.logger.Errorf("stanMsgChannel: ", err)
