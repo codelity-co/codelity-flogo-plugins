@@ -9,7 +9,7 @@ This trigger allows you to listen to messages on MQTT.
 
 ### Flogo CLI
 ```bash
-flogo install github.com/project-flogo/edge-contrib/trigger/mqtt
+flogo install github.com/codelity-co/codelity-flogo-plugins/trigger/mqtt
 ```
 
 ## Configuration
@@ -51,11 +51,12 @@ MQTT wildcard syntax is supported. For example if the topic is '/x/+/y/#' then t
 
 ### Output:
 
-| Name        | Type   | Description
-| :---        | :---   | :---
-| message     | string | The message received
-| topic       | string | The MQTT topic
-| topicParams | params | The topic parameters
+| Name              | Type   | Description
+| :---              | :---   | :---
+| message           | string | The message received
+| topic             | string | The MQTT topic
+| receivedTimestamp | double | Received timestamp
+| topicParams       | params | The topic parameters
 
 ### Reply:
 
