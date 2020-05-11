@@ -4,7 +4,7 @@
     "version": "0.1.0",
     "title": "Receive MQTT Message",
     "description": "Simple MQTT Trigger",
-    "homepage": "https://github.com/project-flogo/edge-contrib/tree/master/trigger/mqtt",
+    "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/trigger/mqtt",
     "settings":[
       {
         "name": "broker",
