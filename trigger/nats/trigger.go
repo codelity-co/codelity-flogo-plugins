@@ -457,18 +457,11 @@ func getStanConnection(ts *Settings, conn *nats.Conn) (stan.Conn, error) {
 
 func getPayloadData(dataFormat string, data []byte) (interface{}, error) {
 	var outputVar interface{}
-	outputVar = nil
-	switch dataFormat {
-	case "string":
-			outputVar = string(data)
-	case "json":
-		dataMap := make(map[string]interface{})
-		err := json.Unmarshal(data, &dataMap)
-		if err != nil {
-			return nil, err
-		}
-		outputVar = dataMap
-		return outputVar, nil
+
+	err := json.Unmarshal(data, &outputVar)
+	if err != nil {
+		return nil, err
 	}
-	return outputVar, fmt.Errorf("unknown data format")
+
+	return outputVar, nil
 }
