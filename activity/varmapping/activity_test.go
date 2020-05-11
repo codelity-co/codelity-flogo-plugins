@@ -32,13 +32,14 @@ func (suite *VarMappingActivityTestSuite) TestVarMappingActivity_Eval() {
 
 	act := &Activity{}
 	tc := test.NewActivityContext(act.Metadata())
-	input := &Input{
-		InVar: map[string]interface{}{
-			"abc": "test", 
-			"efg": map[string]interface{}{
-				"fgh": "ijk",
-			},
+	var testValue interface{} = map[string]interface{}{
+		"abc": "test", 
+		"efg": map[string]interface{}{
+			"fgh": "ijk",
 		},
+	}
+	input := &Input{
+		InVar: testValue,
 	}
 	err := tc.SetInputObject(input)
 	assert.Nil(t, err)
@@ -50,10 +51,6 @@ func (suite *VarMappingActivityTestSuite) TestVarMappingActivity_Eval() {
 	output := &Output{}
 	err = tc.GetOutputObject(output)
 	assert.Nil(t, err)
-	assert.Equal(t, map[string]interface{}{
-		"abc": "test", 
-		"efg": map[string]interface{}{
-			"fgh": "ijk",
-		},
-	}, output.OutVar)
+
+	assert.Equal(t, testValue, output.OutVar)
 }
