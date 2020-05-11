@@ -182,16 +182,29 @@ func (h *HandlerSettings) ToMap() map[string]interface{} {
 }
 
 type Output struct {
+	PayloadFormat string `md:"payloadFormat"`
 	Payload interface{} `md:"payload"`
 }
 
 func (o *Output) FromMap(values map[string]interface{}) error {
-	o.Payload = values["payload"]
+	var err error 
+
+	o.PayloadFormat, err = coerce.ToString(values["payloadFormat"])
+	if err != nil {
+		return err
+	}
+
+	o.Payload, err = coerce.ToAny(values["payload"])
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (o *Output) ToMap() map[string]interface{} {
 	return map[string]interface{}{
+		"payloadFormat": o.PayloadFormat,
 		"payload": o.Payload,
 	}
 }
