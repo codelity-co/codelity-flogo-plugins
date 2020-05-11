@@ -8,7 +8,7 @@
   "input": [
     {
       "name": "in",
-      "type": "object",
+      "type": "any",
       "required": true
     }
   ],

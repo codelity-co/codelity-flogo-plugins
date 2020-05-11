@@ -8,13 +8,13 @@ import (
 type Settings struct {}
 
 type Input struct {
-	InVar map[string]interface{} `md:"in,required"`
+	InVar interface{} `md:"in,required"`
 }
 
 func (i *Input) FromMap(values map[string]interface{}) error {
 	var err error 
 
-	i.InVar, err = coerce.ToObject(values["in"])
+	i.InVar, err = coerce.ToAny(values["in"])
 	if err != nil {
 		return err
 	}
@@ -70,13 +70,13 @@ func (i *Input) MapValue(value interface{}) (interface{}, error) {
 }
 
 type Output struct {
-	OutVar map[string]interface{} `md:"out,required"`
+	OutVar interface{} `md:"out,required"`
 }
 
 func (o *Output) FromMap(values map[string]interface{}) error {
 	var err error
 
-	o.OutVar, err = coerce.ToObject(values["out"])
+	o.OutVar, err = coerce.ToAny(values["out"])
 	if err != nil {
 		return err
 	}
