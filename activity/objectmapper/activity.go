@@ -67,7 +67,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	}
 
 	var outValue interface{}
-	outValue, err = objectMapper.Apply(nil)
+	outValue, err = objectMapper.Apply(ctx.ActivityHost().Scope())
 	if err != nil {
 		return true, err
 	}
