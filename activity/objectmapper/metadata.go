@@ -7,13 +7,13 @@ import (
 type Settings struct{}
 
 type Input struct {
-	Mapping map[string]interface{} `md:"mapping,required"`
+	InVar map[string]interface{} `md:"in,required"`
 }
 
 func (i *Input) FromMap(values map[string]interface{}) error {
 	var err error
 
-	i.Mapping, err = coerce.ToObject(values["mapping"])
+	i.InVar, err = coerce.ToObject(values["in"])
 	if err != nil {
 		return err
 	}
@@ -23,7 +23,7 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 
 func (i *Input) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"mapping": i.Mapping,
+		"in": i.InVar,
 	}
 }
 

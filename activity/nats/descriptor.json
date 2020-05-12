@@ -1,7 +1,7 @@
 {
   "name": "codelity-nats-activity",
   "type": "flogo:activity",
-  "version": "0.3.0",
+  "version": "0.12.0",
   "title": "Codelity NATS Activity",
   "description": "Codelity NATS Activity",
   "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/activity/nats",

@@ -1,7 +1,7 @@
 {
   "name": "datetimex",
   "type": "flogo:function",
-  "version": "0.3.0",
+  "version": "0.12.0",
   "title": "Codelity datetime extended functions",
   "description": "Codelity datetime extended functions",
   "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/tree/master/function/datetimex",
