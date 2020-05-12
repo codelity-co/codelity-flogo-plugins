@@ -2,6 +2,7 @@ package objectmapper
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/project-flogo/core/activity"
@@ -37,40 +38,47 @@ func (suite *ObjectMapperActivityTestSuite) TestObjectMapperActivity_Eval() {
 	t := suite.T()
 	
 	act := &Activity{}
+
 	tc := test.NewActivityContext(act.Metadata())
 	testMappingString := `{
-		"mapping": {
-			"abc": "test", 
-			"cde": "=coerce.toInt32(\"1\")",
-			"efg": {
-				"fgh": "ijk",
-			}
+		"abc": "test", 
+		"cde": 1.0,
+		"efg": {
+			"fgh": "ijk"
 		}
 	}`
 	testMapping := make(map[string]interface{})
-
 	err = json.Unmarshal([]byte(testMappingString), &testMapping)
 	assert.Nil(t, err)
+	assert.NotNil(t, testMapping)
+	fmt.Printf("testMapping: %v: \n", testMapping)
 
 	input := &Input{
-		Mapping: testMapping,
+		InVar: testMapping,
 	}
+	fmt.Printf("Input: %v\n", input)
+
 	err = tc.SetInputObject(input)
 	assert.Nil(t, err)
+	assert.NotNil(t, input)
 
 	done, err = act.Eval(tc)
 	assert.True(t, done)
 	assert.Nil(t, err)
-
 	output := &Output{}
 	err = tc.GetOutputObject(output)
 	assert.Nil(t, err)
-	var expectedValue interface{} = map[string]interface{}{
+	fmt.Printf("Output: %v\n", output)
+
+	expectedValueString := `{
 		"abc": "test", 
-		"cde": 1,
-		"efg": map[string]interface{}{
-			"fgh": "ijk",
-		},
-	}
-	assert.Equal(t, expectedValue, output.OutVar)
+		"cde": 1.0,
+		"efg": {
+			"fgh": "ijk"
+		}
+	}`
+	expectedValue := make(map[string]interface{})
+	err = json.Unmarshal([]byte(expectedValueString), &expectedValue)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedValue, output.OutVar.(map[string]interface{}))
 }

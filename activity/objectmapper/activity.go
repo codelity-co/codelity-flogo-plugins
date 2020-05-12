@@ -31,17 +31,13 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	ctx.Logger().Debugf("Setting: %v", s)
 
-	act := &Activity{
-		MapperFactory: mapper.NewFactory(resolver),
-	} //add aSetting to instance
+	act := &Activity{} //add aSetting to instance
 
 	return act, nil
 }
 
 // Activity is an sample Activity that can be used as a base to create a custom activity
-type Activity struct {
-	MapperFactory mapper.Factory
-}
+type Activity struct {}
 
 // Metadata returns the activity's metadata
 func (a *Activity) Metadata() *activity.Metadata {
@@ -61,7 +57,8 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	}
 
 	var objectMapper mapper.Mapper
-	objectMapper, err = a.MapperFactory.NewMapper(input.Mapping)
+	mapperFactory := mapper.NewFactory(resolver)
+	objectMapper, err = mapperFactory.NewMapper(input.InVar)
 	if err != nil {
 		return true, err
 	}
