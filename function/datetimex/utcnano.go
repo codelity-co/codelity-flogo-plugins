@@ -1,10 +1,15 @@
 package datetimex
 
 import (
+	"time"
+
 	"github.com/project-flogo/core/data"
 	"github.com/project-flogo/core/data/expression/function"
-	"time"
 )
+
+func init() {
+	_ = function.Register(&fnUtcNano{})
+}
 
 type fnUtcNano struct {
 }
@@ -16,7 +21,6 @@ func init() {
 func (s *fnUtcNano) Name() string {
 	return "utcNano"
 }
-
 
 func (s *fnUtcNano) Sig() (paramTypes []data.Type, isVariadic bool) {
 	return []data.Type{}, false
