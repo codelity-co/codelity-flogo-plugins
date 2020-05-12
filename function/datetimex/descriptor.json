@@ -2,14 +2,16 @@
   "name": "datetimex",
   "type": "flogo:function",
   "version": "0.3.0",
-  "title": "datetimexFunctions",
-  "description": "datetimexFunctions",
+  "title": "Codelity datetime extended functions",
+  "description": "Codelity datetime extended functions",
   "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/tree/master/function/datetimex",
   "functions": [
     {
       "name": "utcNano",
       "description": "return UTC Nano seconds",
       "example": "datetimex.utcNano()",
+      "args": [
+      ],
       "return": {
           "type": "int64"
       },
