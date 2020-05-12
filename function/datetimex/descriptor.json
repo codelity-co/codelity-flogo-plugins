@@ -7,7 +7,7 @@
   "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/tree/master/function/datetimex",
   "functions": [
     {
-      "name": "utcnano",
+      "name": "utcNano",
       "description": "return UTC Nano seconds",
       "example": "datetimex.utcNano()",
       "return": {
