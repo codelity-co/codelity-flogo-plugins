@@ -39,7 +39,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 }
 
 // Activity is an sample Activity that can be used as a base to create a custom activity
-type Activity struct {	
+type Activity struct {
 	MapperFactory mapper.Factory
 }
 
@@ -71,6 +71,8 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	if err != nil {
 		return true, err
 	}
+	ctx.Logger().Debugf("outValue: %v", outValue)
+
 	output := &Output{OutVar: outValue}
 	ctx.Logger().Debugf("Output: %v", output)
 
