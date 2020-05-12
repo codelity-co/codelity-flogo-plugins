@@ -1,0 +1,22 @@
+{
+  "name": "codelity-objectmapper-activity",
+  "type": "flogo:activity",
+  "version": "0.2.0",
+  "title": "Codelity Object Mapper Activity",
+  "description": "Codelity Object Mapper Activity",
+  "homepage": "https://github.com/codelity-co/codelity-flogo-plugins/activity/objectmapper",
+  "input": [
+    {
+      "name": "mapping",
+      "type": "object",
+      "required": true
+    }
+  ],
+  "output": [
+    {
+      "name": "out",
+      "type": "object",
+      "required": true
+    }
+  ]
+}
