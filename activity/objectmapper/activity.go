@@ -1,8 +1,11 @@
-package varmapping
+package objectmapper
 
 import (
 	"github.com/project-flogo/core/activity"
+	"github.com/project-flogo/core/data/mapper"
 	"github.com/project-flogo/core/data/metadata"
+	"github.com/project-flogo/core/data/property"
+	"github.com/project-flogo/core/data/resolve"
 )
 
 func init() {
@@ -10,6 +13,12 @@ func init() {
 }
 
 var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})
+var resolver = resolve.NewCompositeResolver(map[string]resolve.Resolver{
+	".":        &resolve.ScopeResolver{},
+	"env":      &resolve.EnvResolver{},
+	"property": &property.Resolver{},
+	"loop":     &resolve.LoopResolver{},
+})
 
 //New optional factory method, should be used if one activity instance per configuration is desired
 func New(ctx activity.InitContext) (activity.Activity, error) {
@@ -22,13 +31,16 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	ctx.Logger().Debugf("Setting: %v", s)
 
-	act := &Activity{} //add aSetting to instance
+	act := &Activity{
+		MapperFactory: mapper.NewFactory(resolver),
+	} //add aSetting to instance
 
 	return act, nil
 }
 
 // Activity is an sample Activity that can be used as a base to create a custom activity
-type Activity struct {
+type Activity struct {	
+	MapperFactory mapper.Factory
 }
 
 // Metadata returns the activity's metadata
@@ -39,9 +51,7 @@ func (a *Activity) Metadata() *activity.Metadata {
 // Eval implements api.Activity.Eval - Logs the Message
 func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 
-	var (
-		err      error
-	)
+	var err error
 
 	input := &Input{}
 	err = ctx.GetInputObject(input)
@@ -50,7 +60,18 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 		return true, err
 	}
 
-	output := &Output{OutVar: input.InVar}
+	var objectMapper mapper.Mapper
+	objectMapper, err = a.MapperFactory.NewMapper(input.Mapping)
+	if err != nil {
+		return true, err
+	}
+
+	var outValue interface{}
+	outValue, err = objectMapper.Apply(nil)
+	if err != nil {
+		return true, err
+	}
+	output := &Output{OutVar: outValue}
 	ctx.Logger().Debugf("Output: %v", output)
 
 	err = ctx.SetOutputObject(output)
