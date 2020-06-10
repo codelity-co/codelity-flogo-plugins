@@ -14,6 +14,8 @@ Please go [here](https://github.com/project-flogo/core) for details.
 
 * [MQTT Trigger](https://github.com/codelity-co/flogo-mqtt-trigger) (forked from github.com/project-flogo/edge-contrib)
 * [NATS Trigger](https://github.com/codelity-co/flogo-nats-trigger) (with STAN support)
+* [Zeebe Task Trigger](https://github.com/codelity-co/flogo-zeebetask-trigger)
+
 
 ### Activities
 
