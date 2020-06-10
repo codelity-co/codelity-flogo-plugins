@@ -21,6 +21,7 @@ Please go [here](https://github.com/project-flogo/core) for details.
 * [ObjectMapper Activity](https://github.com/codelity-co/flogo-objectmapper-activity) (similar with Mapper but it is for activities within the same flow)
 * [CockroachDB Activity](https://github.com/codelity-co/flogo-cockroachdb-activity)
 * [MinIO Activity](https://github.com/codelity-co/flogo-minio-activity)
+* [Zeebe Workflow Activity](https://github.com/codelity-co/flogo-zeebeworkflow-activity)
 
 ### Functions
 * [datetimex Functions](https://github.com/codelity-co/flogo-datetimex-function) (Extented functions for datetime)
